@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ calc.name }} – Lumicolor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 11pt; color: #111; background: #fff; padding: 20mm 18mm; }
+
+    h1 { font-size: 18pt; margin-bottom: 2mm; }
+    .sub { color: #555; font-size: 9.5pt; margin-bottom: 6mm; }
+
+    /* IMAGEN */
+    .img-box { margin-bottom: 7mm; }
+    .img-box img { max-width: 100%; max-height: 200px; border: 1px solid #ccc; border-radius: 4px; display: block; }
+    .img-label { font-size: 8.5pt; color: #666; margin-bottom: 2mm; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* KPI */
+    .kpis { display: flex; gap: 5mm; margin-bottom: 7mm; flex-wrap: wrap; }
+    .kpi { border: 1px solid #ddd; border-radius: 5px; padding: 3mm 5mm; flex: 1; min-width: 35mm; }
+    .kpi-label { font-size: 8pt; color: #666; margin-bottom: 1mm; }
+    .kpi-val { font-size: 14pt; font-weight: 700; }
+    .kpi-sub { font-size: 8pt; color: #888; }
+    .kpi.highlight { background: #0d47a1; color: #fff; border-color: #0d47a1; }
+    .kpi.highlight .kpi-label, .kpi.highlight .kpi-sub { color: rgba(255,255,255,.75); }
+
+    /* TABLA */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 7mm; font-size: 9.5pt; }
+    th { background: #0d47a1; color: #fff; padding: 2mm 3mm; text-align: left; }
+    td { padding: 2mm 3mm; border-bottom: 1px solid #e5e5e5; }
+    tr:nth-child(even) td { background: #f7f9fc; }
+
+    /* TOTALES */
+    .totales { border: 1px solid #ddd; border-radius: 5px; padding: 4mm 5mm; margin-bottom: 7mm; font-size: 10pt; }
+    .totales h3 { font-size: 10.5pt; margin-bottom: 3mm; color: #0d47a1; }
+    .tot-row { display: flex; justify-content: space-between; padding: 1mm 0; border-bottom: 1px solid #f0f0f0; }
+    .tot-row:last-child { border-bottom: none; font-weight: 700; font-size: 11pt; margin-top: 2mm; }
+
+    /* PARAMS */
+    .params { display: flex; gap: 4mm; font-size: 8.5pt; color: #555; margin-bottom: 6mm; flex-wrap: wrap; }
+    .param { background: #f4f6f9; border: 1px solid #e0e0e0; border-radius: 4px; padding: 1.5mm 3mm; }
+
+    /* MATERIAL SUGERIDO */
+    .mat-section { margin-bottom: 7mm; }
+    .mat-section h3 { font-size: 10.5pt; color: #065f46; margin-bottom: 2mm; }
+    .mat-note-global { font-size: 8.5pt; color: #065f46; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 4px; padding: 2mm 3mm; margin-bottom: 3mm; }
+    .mat-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+    .mat-table th { background: #065f46; color: #fff; padding: 2mm 3mm; text-align: left; }
+    .mat-table td { padding: 2mm 3mm; border-bottom: 1px solid #d1fae5; }
+    .mat-table tr:nth-child(even) td { background: #f0fdf4; }
+    .mat-tag { display: inline-block; font-size: 7.5pt; font-weight: 700; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 3px; padding: 0.5mm 2mm; }
+
+    /* FOOTER */
+    .footer { margin-top: 10mm; font-size: 8pt; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 3mm; }
+
+    @media print {
+      body { padding: 10mm 12mm; }
+      .no-print { display: none !important; }
+    }
+
+    /* BOTÓN solo visible en pantalla */
+    .btn-print {
+      display: inline-block; margin-bottom: 8mm; padding: 2.5mm 7mm;
+      background: #0d47a1; color: #fff; border: none; border-radius: 5px;
+      font-size: 10pt; cursor: pointer;
+    }
+    .btn-print:hover { background: #1565c0; }
+  </style>
+  <script>
+    window.onload = function () {
+      window.print();
+    };
+  </script>
+</head>
+<body>
+
+<div class="no-print" style="margin-bottom:5mm;">
+  <button class="btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+  <a href="{{ url_for('result', calc_id=calc.id) }}" style="margin-left:5mm;font-size:9pt;color:#555;">← Volver</a>
+</div>
+
+<h1>{{ calc.name }}</h1>
+<div class="sub">
+  {{ rows | length }} área{{ 's' if rows | length != 1 else '' }} productiva{{ 's' if rows | length != 1 else '' }}
+  &bull; {{ calc.created_at.strftime('%d/%m/%Y %H:%M') }}
+  &bull; Usuario: {{ calc.user.username }}
+</div>
+
+{% if calc.image_url %}
+<div class="img-box">
+  <div class="img-label">Imagen analizada</div>
+  <img src="{{ request.host_url.rstrip('/') }}{{ calc.image_url }}" alt="Imagen analizada" />
+</div>
+{% endif %}
+
+<div class="params">
+  <div class="param">Empaque: <strong>{{ packaging_minutes }} min</strong></div>
+  <div class="param">Colchón: <strong>{{ cushion_pct }}%</strong></div>
+  <div class="param">Jornada: <strong>{{ hours_per_day }} h/día</strong></div>
+  <div class="param">Producción: <strong>{{ production_minutes | round(1) }} min</strong></div>
+</div>
+
+<div class="kpis">
+  <div class="kpi">
+    <div class="kpi-label">Total sin colchón</div>
+    <div class="kpi-val">{{ (production_minutes + packaging_minutes) | round(1) }} min</div>
+    <div class="kpi-sub">{{ total_hours | round(2) }} horas</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Días sin colchón</div>
+    <div class="kpi-val">{{ days | round(2) }} días</div>
+    <div class="kpi-sub">Jornada de {{ hours_per_day }} h/día</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Horas con colchón</div>
+    <div class="kpi-val">{{ total_hours_with_cushion | round(2) }} h</div>
+    <div class="kpi-sub">+{{ cushion_pct }}% de margen</div>
+  </div>
+  <div class="kpi highlight">
+    <div class="kpi-label">Tiempo estimado total</div>
+    <div class="kpi-val">{{ days_with_cushion | round(2) }} días</div>
+    <div class="kpi-sub">con colchón &bull; {{ hours_per_day }} h/día</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Área</th>
+      <th>Subproceso</th>
+      <th>Grupo</th>
+      <th>Cantidad</th>
+      <th>Min/pieza</th>
+      <th>Total min</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ row.area }}</td>
+      <td>{{ row.subprocess }}</td>
+      <td>{{ row.group }}</td>
+      <td>{{ row.quantity | int }}</td>
+      <td>{{ row.mins_per_piece | round(2) }}</td>
+      <td><strong>{{ row.total_mins | round(2) }}</strong></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="totales">
+  <h3>Resumen de tiempos</h3>
+  <div class="tot-row"><span>Producción</span><span>{{ production_minutes | round(2) }} min</span></div>
+  <div class="tot-row"><span>Empaque</span><span>{{ packaging_minutes }} min</span></div>
+  <div class="tot-row"><span>Subtotal</span><span>{{ (production_minutes + packaging_minutes) | round(2) }} min</span></div>
+  <div class="tot-row"><span>Colchón ({{ cushion_pct }}%)</span><span>+{{ ((production_minutes + packaging_minutes) * cushion_pct / 100) | round(2) }} min</span></div>
+  <div class="tot-row"><span>Horas con colchón</span><span>{{ total_hours_with_cushion | round(2) }} h</span></div>
+  <div class="tot-row"><span>Días estimados</span><span>{{ days_with_cushion | round(2) }} días</span></div>
+</div>
+
+{% if materials %}
+<div class="mat-section">
+  <h3>Material sugerido</h3>
+  <div class="mat-note-global">El color depende de la variabilidad del componente.</div>
+  <table class="mat-table">
+    <thead>
+      <tr>
+        <th>Área</th>
+        <th>Material sugerido</th>
+        <th>Nota</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in materials %}
+      <tr>
+        <td><span class="mat-tag">{{ m.area }}</span></td>
+        <td><strong>{{ m.material }}</strong></td>
+        <td>{{ m.note }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="footer">
+  Calculadora SMV – Lumicolor &bull; Generado el {{ calc.created_at.strftime('%d/%m/%Y %H:%M') }}
+</div>
+
+</body>
+</html>

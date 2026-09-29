@@ -1,0 +1,123 @@
+{
+  "CORTE": {
+    "Acrílico blanco (3 mm sin rebaje perimetral)": {
+      "CTE-A1": {"tiempo": 3.50, "desc": "25–30 cm"},
+      "CTE-A2": {"tiempo": 4.18, "desc": "49 cm"},
+      "CTE-A3": {"tiempo": 4.35, "desc": "52–61 cm"},
+      "CTE-A4": {"tiempo": 4.67, "desc": "70–73 cm"},
+      "CTE-A5": {"tiempo": 6.40, "desc": "85–94 cm"},
+      "CTE-A6": {"tiempo": 7.76, "desc": "102–180 cm"}
+    },
+    "Lámina cal. 19": {
+      "CTE-L1": {"tiempo": 3.02, "desc": "25–30 cm"},
+      "CTE-L2": {"tiempo": 2.89, "desc": "49 cm"},
+      "CTE-L3": {"tiempo": 3.87, "desc": "52–61 cm"},
+      "CTE-L4": {"tiempo": 5.01, "desc": "70–73 cm"},
+      "CTE-L5": {"tiempo": 5.10, "desc": "85–94 cm"},
+      "CTE-L6": {"tiempo": 6.70, "desc": "102–180 cm"}
+    },
+    "Trovicel (10 mm)": {
+      "CTE-T1": {"tiempo": 10.46, "desc": "49×46 cm"}
+    }
+  },
+  "CANTO": {
+    "Canto con flange": {
+      "CTO-F1": {"tiempo": 2.29, "desc": "25–30 cm"},
+      "CTO-F2": {"tiempo": 5.63, "desc": "49 cm"},
+      "CTO-F3": {"tiempo": 4.46, "desc": "52–61 cm"},
+      "CTO-F4": {"tiempo": 5.37, "desc": "70–73 cm"},
+      "CTO-F5": {"tiempo": 6.34, "desc": "85–94 cm"},
+      "CTO-F6": {"tiempo": 9.63, "desc": "102–180 cm"}
+    },
+    "Canto sin flange": {
+      "CTO-SF1": {"tiempo": 3.60, "desc": "53×47 cm"},
+      "CTO-SF2": {"tiempo": 7.26, "desc": "70×44 cm"},
+      "CTO-SF3": {"tiempo": 5.94, "desc": "90×57 cm"}
+    }
+  },
+  "ENSAMBLE": {
+    "Ensamble con flange": {
+      "ENS-F1": {"tiempo": 5.09, "desc": "22–30 cm"},
+      "ENS-F2": {"tiempo": 14.07, "desc": "49 cm"},
+      "ENS-F3": {"tiempo": 12.84, "desc": "52–61 cm"},
+      "ENS-F4": {"tiempo": 13.74, "desc": "70–73 cm"},
+      "ENS-F5": {"tiempo": 15.31, "desc": "81–94 cm"},
+      "ENS-F6": {"tiempo": 30.00, "desc": "100–180 cm"}
+    },
+    "Ensamble sin flange": {
+      "ENS-SF1": {"tiempo": 116.00, "desc": "150×150 cm"}
+    }
+  },
+  "ILUMINACIÓN": {
+    "Iluminación": {
+      "ILU-1": {"tiempo": 4.55, "desc": "22–30 cm"},
+      "ILU-2": {"tiempo": 6.55, "desc": "49 cm"},
+      "ILU-3": {"tiempo": 8.46, "desc": "53–61 cm"},
+      "ILU-4": {"tiempo": 6.64, "desc": "70–73 cm"},
+      "ILU-5": {"tiempo": 7.09, "desc": "81–94 cm"},
+      "ILU-6": {"tiempo": 17.57, "desc": "100–180 cm"}
+    },
+    "Neón": {
+      "NEO-1": {"tiempo": 270.00, "desc": "69×79 cm"}
+    }
+  },
+  "TRIMCAP": {
+    "Silvatrim": {
+      "TRIM-1": {"tiempo": 8.95, "desc": "30–49 cm"},
+      "TRIM-2": {"tiempo": 11.25, "desc": "53–61 cm"},
+      "TRIM-3": {"tiempo": 13.33, "desc": "70–73 cm"},
+      "TRIM-4": {"tiempo": 13.46, "desc": "85–94 cm"},
+      "TRIM-5": {"tiempo": 24.38, "desc": "102–180 cm"}
+    }
+  },
+  "PINTURA": {
+    "Igualación": {
+      "PIN-1a": {"tiempo": 16.00, "desc": "30×30 cm"},
+      "PIN-1b": {"tiempo": 24.75, "desc": "57×62 cm"},
+      "PIN-1c": {"tiempo": 36.90, "desc": "61×56 cm"},
+      "PIN-1d": {"tiempo": 33.00, "desc": "94×87 cm"},
+      "PIN-1e": {"tiempo": 86.00, "desc": "100×198 cm"}
+    }
+  },
+  "SOLDADURA": {
+    "Nube": {
+      "SOL-NU1": {"tiempo": 380.00, "desc": "150×150 cm"}
+    },
+    "Caja de luz": {
+      "SOLCALU-1": {"tiempo": 172.00, "desc": "61×350 cm"}
+    }
+  },
+  "TENSADO": {
+    "Lona": {
+      "TENS-1": {"tiempo": 75.00, "desc": "240×450 cm"}
+    }
+  },
+  "TERMOFORMADO": {
+    "Termoformado": {
+      "TERM-1": {"tiempo": 30.20, "desc": "77×204 cm"},
+      "TERM-2": {"tiempo": 19.95, "desc": "70×70 cm"},
+      "TERM-3": {"tiempo": 42.95, "desc": "100×223 cm"},
+      "TERM-4": {"tiempo": 18.95, "desc": "100×180 cm"},
+      "TERM-5": {"tiempo": 76.67, "desc": "100×180 cm"}
+    }
+  },
+  "ROTULACIÓN": {
+    "Rotulación": {
+      "ROT-1": {"tiempo": 9.92,  "desc": "–"},
+      "ROT-2": {"tiempo": 39.73, "desc": "–"},
+      "ROT-3": {"tiempo": 20.90, "desc": "95×63 cm"}
+    }
+  },
+  "RANURADO": {
+    "Ranurado": {
+      "RAN-1": {"tiempo": 24.15,  "desc": "99×146 cm"},
+      "RAN-2": {"tiempo": 25.45,  "desc": "–"},
+      "RAN-3": {"tiempo": 109.42, "desc": "155×498 cm"},
+      "RAN-4": {"tiempo": 18.33,  "desc": "–"},
+      "RAN-5": {"tiempo": 31.55,  "desc": "165×70 cm"},
+      "RAN-6": {"tiempo": 11.07,  "desc": "–"}
+    }
+  }
+}
+
+

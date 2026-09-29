@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resultado &ndash; Calculadora SMV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --sidebar:      #0f172a;
+      --sidebar-2:    #1e293b;
+      --orange:       #1565c0;
+      --orange-dk:    #0d47a1;
+      --orange-light: #eff6ff;
+      --orange-bg:    rgba(21,101,192,.13);
+      --green:        #10b981;
+      --green-light:  #ecfdf5;
+      --green-dark:   #065f46;
+      --green-mid:    #6ee7b7;
+      --bg:           #f1f5f9;
+      --card:         #ffffff;
+      --text:         #0f172a;
+      --muted:        #64748b;
+      --border:       #e2e8f0;
+      --input-bg:     #f8fafc;
+      --radius:       10px;
+      --radius-sm:    7px;
+      --shadow:       0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md:    0 4px 12px rgba(0,0,0,.08);
+      --t:            .15s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family:"DM Sans",system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; }
+
+
+    /* TOAST */
+    #toast-rack { position:fixed; top:1rem; right:1.25rem; z-index:9999; display:flex; flex-direction:column; gap:.45rem; pointer-events:none; }
+    .toast { display:flex; align-items:flex-start; gap:.6rem; padding:.72rem 1rem; border-radius:var(--radius-sm); font-size:.82rem; font-weight:500; max-width:340px; box-shadow:0 8px 24px rgba(0,0,0,.14); transform:translateX(115%); opacity:0; transition:transform .32s cubic-bezier(.34,1.56,.64,1),opacity .32s; pointer-events:auto; cursor:pointer; }
+    .toast.in { transform:translateX(0); opacity:1; }
+    .toast-success { background:#ecfdf5; color:#065f46; border:1.5px solid #a7f3d0; }
+    .toast-info    { background:#eff6ff; color:#1e40af; border:1.5px solid #93c5fd; }
+
+    /* SIDEBAR */
+    .sidebar { width:228px; flex-shrink:0; background:var(--sidebar); height:100vh; position:sticky; top:0; display:flex; flex-direction:column; border-right:1px solid rgba(255,255,255,.05); }
+    .sb-brand { padding:1.1rem 1rem 1rem; border-bottom:1px solid rgba(255,255,255,.08); position:relative; display:flex; align-items:center; gap:.75rem; }
+    .sb-brand::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--orange); }
+    .sb-logo-icon { width:34px; height:34px; border-radius:8px; background:var(--orange); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 10px rgba(21,101,192,.45); }
+    .sb-logo-icon svg { width:18px; height:18px; fill:none; stroke:white; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .sb-brand-name { font-size:1rem; font-weight:700; color:#fff; letter-spacing:-.01em; }
+    .sb-brand-sub  { font-size:.67rem; color:rgba(255,255,255,.35); margin-top:.1rem; letter-spacing:.03em; text-transform:uppercase; }
+    .sb-section    { font-size:.68rem; font-weight:600; color:rgba(255,255,255,.25); padding:.9rem .75rem .25rem; }
+    .sb-divider    { height:1px; background:rgba(255,255,255,.06); margin:.35rem .6rem; }
+    .sb-nav { padding:.3rem .6rem; flex:1; display:flex; flex-direction:column; gap:.05rem; }
+    .nav-item { display:flex; align-items:center; gap:.6rem; padding:.52rem .75rem; border-radius:var(--radius-sm); color:rgba(255,255,255,.45); font-size:.82rem; font-weight:500; text-decoration:none; transition:all var(--t); border-left:3px solid transparent; }
+    .nav-item:hover { background:rgba(255,255,255,.05); color:rgba(255,255,255,.75); }
+    .nav-item.active { color:#fff; font-weight:600; border-left-color:var(--orange); background:rgba(255,255,255,.06); }
+    .nav-icon { width:16px; text-align:center; font-size:.9rem; }
+    .sb-footer { padding:.75rem 1rem; border-top:1px solid rgba(255,255,255,.06); display:flex; align-items:center; gap:.6rem; }
+    .avatar { width:30px; height:30px; border-radius:6px; flex-shrink:0; background:var(--orange); display:flex; align-items:center; justify-content:center; font-size:.68rem; font-weight:700; color:white; }
+    .sb-user-name { font-size:.77rem; font-weight:600; color:rgba(255,255,255,.8); }
+    .sb-user-role { font-size:.63rem; color:rgba(255,255,255,.35); margin-top:.05rem; }
+
+    /* CONTENT / TOPBAR */
+    .content { flex:1; min-width:0; display:flex; flex-direction:column; }
+    .topbar { background:var(--card); border-bottom:1px solid var(--border); padding:0 1.5rem; height:54px; display:flex; align-items:center; gap:1rem; position:sticky; top:0; z-index:10; }
+    .topbar-search { flex:1; max-width:340px; display:flex; align-items:center; gap:.45rem; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.38rem .75rem; }
+    .topbar-search input { border:none; background:transparent; font-size:.8rem; color:var(--muted); width:100%; outline:none; }
+    .t-search-icon { font-size:.72rem; color:var(--muted); }
+    .topbar-right { margin-left:auto; display:flex; align-items:center; gap:.8rem; }
+    .t-btn { width:32px; height:32px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:1rem; color:var(--muted); cursor:pointer; transition:background var(--t); }
+    .t-btn:hover { background:var(--input-bg); }
+    .status-pill { display:flex; align-items:center; gap:.35rem; font-size:.72rem; font-weight:700; color:var(--orange); letter-spacing:.08em; text-transform:uppercase; background:var(--orange-light); border:1px solid rgba(21,101,192,.25); padding:.28rem .65rem; border-radius:99px; }
+    .s-dot { width:6px; height:6px; border-radius:50%; background:var(--orange); animation:pulse 2s ease infinite; }
+
+    /* PAGE */
+    .page { padding:1.75rem 2rem 3rem; overflow-y:auto; }
+
+    /* PAGE HEADER */
+    .page-header { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+    .ph-text { flex:1; }
+    .ph-crumb { font-size:.78rem; color:var(--muted); margin-bottom:.35rem; display:flex; align-items:center; gap:.3rem; }
+    .ph-crumb a { color:var(--orange); text-decoration:none; font-weight:500; }
+    .ph-crumb a:hover { color:var(--orange-dk); }
+    .ph-crumb .sep { color:var(--border); }
+    .page-title { font-size:1.65rem; font-weight:800; color:var(--text); letter-spacing:-.02em; line-height:1.2; text-transform:uppercase; }
+    .page-sub { font-size:.83rem; color:var(--muted); margin-top:.3rem; }
+    .done-badge { display:inline-flex; align-items:center; gap:.4rem; background:var(--green-light); color:var(--green-dark); border:1.5px solid var(--green-mid); padding:.38rem .9rem; border-radius:99px; font-size:.78rem; font-weight:700; white-space:nowrap; align-self:center; animation:fadeUp .5s ease .3s both; }
+    .done-dot { width:6px; height:6px; border-radius:50%; background:var(--green); flex-shrink:0; }
+
+    /* FILTER CHIPS */
+    .filter-bar { display:flex; flex-wrap:wrap; gap:.6rem; margin-bottom:1.5rem; }
+    .fchip { display:inline-flex; align-items:center; gap:.35rem; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.38rem .85rem; font-size:.78rem; color:var(--muted); box-shadow:var(--shadow); }
+    .fchip strong { color:var(--text); font-weight:700; }
+    .fchip-orange { border-color:rgba(21,101,192,.35); background:var(--orange-light); color:var(--orange-dk); font-weight:600; }
+    .fchip-orange strong { color:var(--orange-dk); }
+
+    /* SUMMARY GRID */
+    .summary-row { display:grid; grid-template-columns:1fr 1fr 1fr 1.25fr; gap:1rem; margin-bottom:1.75rem; }
+    .sbox { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.1rem 1rem; box-shadow:var(--shadow); transition:transform var(--t),box-shadow var(--t); animation:fadeUp .45s ease both; }
+    .sbox:nth-child(1){animation-delay:.05s} .sbox:nth-child(2){animation-delay:.12s} .sbox:nth-child(3){animation-delay:.19s}
+    .sbox:hover { box-shadow:var(--shadow-md); }
+    .sbox .s-label { font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.55rem; }
+    .sbox .s-val   { font-size:2rem; font-weight:900; color:var(--text); line-height:1; letter-spacing:-.03em; }
+    .sbox .s-unit  { font-size:1rem; font-weight:600; color:var(--orange); margin-left:.1rem; }
+    .sbox .s-sub   { font-size:.72rem; color:var(--muted); margin-top:.35rem; }
+    .sbox-dark { background:var(--sidebar); border-radius:var(--radius); padding:1.2rem 1.1rem; box-shadow:var(--shadow-md); transition:transform var(--t),box-shadow var(--t); animation:fadeUp .45s ease .28s both; }
+    .sbox-dark:hover { box-shadow:0 8px 24px rgba(15,23,42,.25); }
+    .sbox-dark .s-label { font-size:.64rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:rgba(255,255,255,.4); margin-bottom:.55rem; }
+    .sbox-dark .s-val   { font-size:2.4rem; font-weight:900; color:white; line-height:1; letter-spacing:-.03em; }
+    .sbox-dark .s-unit  { font-size:1.15rem; font-weight:600; color:var(--orange); }
+    .sbox-dark .s-sub   { font-size:.72rem; color:rgba(255,255,255,.35); margin-top:.4rem; }
+    .sbox-dark .s-tag   { display:inline-flex; align-items:center; gap:.25rem; margin-top:.6rem; font-size:.7rem; font-weight:600; color:var(--orange); background:var(--orange-bg); border:1px solid rgba(21,101,192,.2); padding:.18rem .55rem; border-radius:99px; }
+
+    /* ══ LAYOUT DOS COLUMNAS ══ */
+    .two-col { display:grid; grid-template-columns:1fr 320px; gap:1.25rem; align-items:start; }
+
+    /* ══ TIMELINE ══ */
+    .timeline-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; animation:fadeUp .45s ease .35s both; }
+    .timeline-head { padding:.85rem 1.2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.75rem; }
+    .tl-label { font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:.45rem; }
+    .tl-label .odot { width:7px; height:7px; border-radius:50%; background:var(--orange); flex-shrink:0; }
+    .tl-right { margin-left:auto; display:flex; gap:.5rem; align-items:center; }
+
+    .timeline { padding:1.25rem 1.4rem 1.4rem; display:flex; flex-direction:column; gap:0; }
+
+    /* Grupo de área */
+    .tl-group { position:relative; padding-left:2.4rem; margin-bottom:1.4rem; }
+    .tl-group:last-child { margin-bottom:0; }
+
+    /* Línea vertical */
+    .tl-group::before {
+      content:'';
+      position:absolute; left:.85rem; top:1.5rem; bottom:-1.4rem;
+      width:2px; background:var(--border);
+    }
+    .tl-group:last-child::before { display:none; }
+
+    /* Nodo del área */
+    .tl-node {
+      position:absolute; left:0; top:.15rem;
+      width:1.7rem; height:1.7rem; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.65rem; font-weight:900; color:white;
+      box-shadow:0 0 0 3px var(--bg);
+      flex-shrink:0;
+    }
+
+    /* Header del área */
+    .tl-area-header {
+      display:flex; align-items:center; gap:.6rem;
+      margin-bottom:.75rem; flex-wrap:wrap;
+    }
+    .tl-area-name { font-size:.92rem; font-weight:800; color:var(--text); letter-spacing:-.01em; }
+    .tl-area-total { margin-left:auto; font-size:.82rem; font-weight:700; color:var(--orange); font-variant-numeric:tabular-nums; background:var(--orange-light); border:1px solid rgba(21,101,192,.2); padding:.2rem .6rem; border-radius:6px; }
+    .tl-area-count { font-size:.65rem; font-weight:600; color:var(--muted); background:var(--input-bg); border:1px solid var(--border); padding:.15rem .45rem; border-radius:99px; }
+
+    /* Items dentro del área */
+    .tl-items { display:flex; flex-direction:column; gap:.5rem; }
+    .tl-item {
+      background:var(--input-bg); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:.62rem .85rem;
+      display:grid; grid-template-columns:1fr auto;
+      gap:.4rem .8rem; align-items:center;
+      transition:border-color var(--t), background var(--t);
+      animation:fadeUp .3s ease both;
+    }
+    .tl-item:hover { border-color:var(--orange); background:var(--orange-light); }
+    .tl-item-left { display:flex; flex-direction:column; gap:.18rem; min-width:0; }
+    .tl-subprocess { font-size:.82rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tl-group-name { font-size:.72rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tl-item-right { display:flex; flex-direction:column; align-items:flex-end; gap:.15rem; flex-shrink:0; }
+    .tl-qty  { font-size:.68rem; color:var(--muted); font-weight:500; }
+    .tl-mins { font-size:.9rem; font-weight:800; color:var(--orange); font-variant-numeric:tabular-nums; }
+
+    /* ══ PANEL DERECHO ══ */
+    .right-col { display:flex; flex-direction:column; gap:1rem; }
+
+    /* Totales card */
+    .totals-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; animation:fadeUp .45s ease .4s both; }
+    .totals-head { background:var(--sidebar); padding:.75rem 1rem; font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.7); display:flex; align-items:center; gap:.4rem; }
+    .totals-head::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--orange); }
+    .totals-body { padding:.9rem 1rem; }
+    .total-row { display:flex; align-items:center; justify-content:space-between; padding:.45rem 0; border-bottom:1px solid var(--border); font-size:.83rem; }
+    .total-row:last-child { border-bottom:none; }
+    .total-row .tr-label { color:var(--muted); font-weight:500; }
+    .total-row .tr-val   { font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
+    .total-row.highlight { background:var(--orange-light); margin:0 -1rem; padding:.5rem 1rem; border-radius:0; }
+    .total-row.highlight .tr-label { color:var(--orange-dk); font-weight:600; }
+    .total-row.highlight .tr-val   { color:var(--orange-dk); font-size:.95rem; }
+    .total-row.grand { background:var(--sidebar); margin:0 -1rem -.9rem; padding:.65rem 1rem; }
+    .total-row.grand .tr-label { color:rgba(255,255,255,.6); font-size:.8rem; }
+    .total-row.grand .tr-val   { color:var(--orange); font-size:1.1rem; font-weight:900; }
+
+    /* Progress bar por área */
+    .area-breakdown { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; animation:fadeUp .45s ease .5s both; }
+    .ab-head { padding:.75rem 1rem; border-bottom:1px solid var(--border); font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:.4rem; }
+    .ab-head .odot { width:6px; height:6px; border-radius:50%; background:var(--orange); }
+    .ab-body  { padding:.75rem 1rem; display:flex; flex-direction:column; gap:.7rem; }
+    .ab-item  { display:flex; flex-direction:column; gap:.28rem; }
+    .ab-top   { display:flex; justify-content:space-between; font-size:.75rem; }
+    .ab-name  { font-weight:600; color:var(--text); }
+    .ab-pct   { color:var(--muted); font-variant-numeric:tabular-nums; }
+    .ab-bar   { height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+    .ab-fill  { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--orange),#1976d2); transition:width .8s cubic-bezier(.4,0,.2,1); }
+
+    /* MATERIAL SUGERIDO */
+    .mat-card { background:var(--card); border:1px solid #a7f3d0; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; animation:fadeUp .45s ease .55s both; }
+    .mat-head { background:linear-gradient(135deg,#ecfdf5,#d1fae5); padding:.75rem 1rem; font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#065f46; display:flex; align-items:center; gap:.4rem; border-bottom:1px solid #a7f3d0; }
+    .mat-head .odot { width:6px; height:6px; border-radius:50%; background:#059669; }
+    .mat-note-global { font-size:.73rem; color:#065f46; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:6px; padding:.45rem .75rem; margin:.75rem 1rem .5rem; line-height:1.5; }
+    .mat-list { padding:.5rem 1rem .85rem; display:flex; flex-direction:column; gap:.45rem; }
+    .mat-item { display:flex; align-items:center; gap:.6rem; padding:.5rem .75rem; background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); }
+    .mat-tag { font-size:.6rem; font-weight:800; letter-spacing:.07em; text-transform:uppercase; padding:.13rem .45rem; border-radius:99px; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; flex-shrink:0; }
+    .mat-name { font-size:.82rem; font-weight:700; color:var(--text); flex:1; }
+    .mat-note { font-size:.68rem; color:var(--muted); font-style:italic; }
+
+    /* ACTIONS */
+    .actions { display:flex; gap:.85rem; flex-wrap:wrap; margin-top:1.25rem; }
+    .btn { display:inline-flex; align-items:center; gap:.45rem; padding:.58rem 1.3rem; border:none; border-radius:var(--radius-sm); cursor:pointer; font-size:.85rem; font-weight:600; text-decoration:none; transition:all var(--t); white-space:nowrap; }
+    .btn:active { transform:scale(.97); }
+    .btn-primary { background:var(--orange); color:white; box-shadow:0 2px 8px rgba(21,101,192,.3); }
+    .btn-primary:hover { background:var(--orange-dk); }
+    .btn-outline { background:var(--card); color:var(--text); border:1.5px solid var(--border); }
+    .btn-outline:hover { border-color:var(--orange); color:var(--orange); background:var(--orange-light); }
+    .btn-ghost { background:transparent; color:var(--muted); border:1.5px solid var(--border); padding:.35rem .85rem; font-size:.78rem; }
+    .btn-ghost:hover { background:var(--input-bg); color:var(--text); }
+    .copy-ok { font-size:.78rem; color:var(--green-dark); font-weight:600; display:none; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes onlinePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.3)} }
+
+    @media print {
+      .completion-bar,.sidebar,.topbar,.ph-crumb,.actions,.tl-right { display:none !important; }
+      body { background:white; display:block; }
+      .content { display:block; }
+      .page { padding:0; }
+      .two-col { grid-template-columns:1fr; }
+      .calc-image-box { display:block !important; page-break-inside:avoid; }
+      .calc-image-box img { max-width:100%; max-height:260px; }
+    }
+    @media (max-width:900px) { .two-col { grid-template-columns:1fr; } }
+    @media (max-width:768px) { .sidebar{display:none} .page{padding:1rem .9rem 2.5rem} .summary-row{grid-template-columns:1fr 1fr} }
+    @media (max-width:500px) { .page-title{font-size:1.2rem} .topbar-search{display:none} .done-badge{display:none} .summary-row{grid-template-columns:1fr 1fr} }
+  </style>
+</head>
+<body>
+
+<div id="toast-rack"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="sb-brand-name">Lumicolor</div>
+      <div class="sb-brand-sub">Calculadora SMV</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a class="nav-item" href="{{ url_for('index') }}">
+      <span class="nav-icon"><i class="fa-solid fa-calculator"></i></span>Calculadora
+    </a>
+    <a class="nav-item active" href="{{ url_for('history') }}">
+      <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>Historial
+    </a>
+    {% if current_user.is_admin %}
+    <div class="sb-divider"></div>
+    <a class="nav-item" href="{{ url_for('admin_users') }}">
+      <span class="nav-icon"><i class="fa-solid fa-users"></i></span>Usuarios
+    </a>
+    {% endif %}
+  </nav>
+  <div class="sb-footer">
+    <div class="avatar">{{ current_user.username[:2].upper() }}</div>
+    <div>
+      <div class="sb-user-name">{{ current_user.username }}</div>
+      <div class="sb-user-role">{{ 'Administrador' if current_user.is_admin else 'Usuario' }}</div>
+    </div>
+    <a href="{{ url_for('logout') }}" title="Cerrar sesión"
+       style="margin-left:auto;font-size:.7rem;color:rgba(255,255,255,.3);text-decoration:none;padding:.2rem .4rem;border-radius:4px;transition:all .15s"
+       onmouseover="this.style.color='#ef4444';this.style.background='rgba(239,68,68,.12)'"
+       onmouseout="this.style.color='rgba(255,255,255,.3)';this.style.background='transparent'"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+  </div>
+</aside>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem">
+      <i class="fa-solid fa-house" style="font-size:.72rem;color:var(--muted)"></i>
+      <a href="{{ url_for('index') }}" style="color:var(--muted);text-decoration:none">Calculadora</a>
+      <span style="color:var(--border)">/</span>
+      <a href="{{ url_for('history') }}" style="color:var(--muted);text-decoration:none">Historial</a>
+      <span style="color:var(--border)">/</span>
+      <span style="font-weight:600;color:var(--text)" title="{{ calc.name }}">Resultado</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill"><span class="s-dot"></span>Completado</div>
+      <a href="{{ url_for('history') }}" class="t-btn" title="Volver al historial"><i class="fa-solid fa-clock-rotate-left"></i></a>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <div class="page-header">
+      <div class="ph-text">
+        <div class="ph-crumb">
+          <a href="{{ url_for('index') }}">← Calculadora</a>
+          <span class="sep">/</span>
+          <a href="{{ url_for('history') }}">Historial</a>
+          <span class="sep">/</span><span>{{ calc.name }}</span>
+        </div>
+        <h1 class="page-title">{{ calc.name }}</h1>
+        <p class="page-sub">{{ rows | length }} área{{ 's' if rows | length != 1 else '' }} productiva{{ 's' if rows | length != 1 else '' }} &bull; {{ calc.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+      </div>
+      <div class="done-badge"><span class="done-dot"></span>Completado</div>
+    </div>
+
+    <!-- CHIPS -->
+    <div class="filter-bar">
+      <div class="fchip">Empaque <strong>{{ packaging_minutes }} min</strong></div>
+      <div class="fchip">Colchón <strong>{{ cushion_pct }}%</strong></div>
+      <div class="fchip">Jornada <strong>{{ hours_per_day }} h/día</strong></div>
+      <div class="fchip">Producción <strong>{{ production_minutes | round(1) }} min</strong></div>
+      <div class="fchip fchip-orange">Total registros <strong>{{ rows | length }}</strong></div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="summary-row">
+      <div class="sbox">
+        <div class="s-label">Total sin colchón</div>
+        <div class="s-val"><span class="s-num" data-target="{{ (production_minutes + packaging_minutes) | round(1) }}" data-dec="1">0</span><span class="s-unit">min</span></div>
+        <div class="s-sub">{{ total_hours | round(2) }} horas</div>
+      </div>
+      <div class="sbox">
+        <div class="s-label">Días sin colchón</div>
+        <div class="s-val"><span class="s-num" data-target="{{ days | round(2) }}" data-dec="2">0</span><span class="s-unit">días</span></div>
+        <div class="s-sub">Jornada de {{ hours_per_day }} h/día</div>
+      </div>
+      <div class="sbox">
+        <div class="s-label">Horas con colchón</div>
+        <div class="s-val"><span class="s-num" data-target="{{ total_hours_with_cushion | round(2) }}" data-dec="2">0</span><span class="s-unit">h</span></div>
+        <div class="s-sub">+{{ cushion_pct }}% de margen</div>
+      </div>
+      <div class="sbox-dark">
+        <div class="s-label">Tiempo estimado total</div>
+        <div class="s-val"><span class="s-num" data-target="{{ days_with_cushion | round(2) }}" data-dec="2">0</span><span class="s-unit">días</span></div>
+        <div class="s-sub">con colchón &bull; {{ hours_per_day }} h/día</div>
+        <div class="s-tag">+{{ cushion_pct }}% vs sin colchón</div>
+      </div>
+    </div>
+
+    {% if calc.image_url %}
+    <div class="card calc-image-box" style="margin-bottom:1.25rem;padding:1rem 1.25rem;">
+      <div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem;">Imagen analizada</div>
+      <img src="{{ calc.image_url }}" alt="Imagen analizada"
+           style="max-width:100%;max-height:320px;border-radius:var(--radius-sm);border:1px solid var(--border);display:block;">
+    </div>
+    {% endif %}
+
+    <!-- DOS COLUMNAS: timeline + panel derecho -->
+    <div class="two-col">
+
+      <!-- TIMELINE -->
+      <div class="timeline-card">
+        <div class="timeline-head">
+          <div class="tl-label"><span class="odot"></span>Línea de producción</div>
+          <div class="tl-right">
+            <button type="button" class="btn-ghost btn" onclick="copySummary()" id="copy-btn">Copiar</button>
+            <span class="copy-ok" id="copy-ok">Copiado</span>
+            <button type="button" class="btn btn-outline" onclick="window.print()" style="padding:.35rem .85rem;font-size:.78rem">Imprimir</button>
+          </div>
+        </div>
+
+        <div class="timeline" id="timeline">
+          {% set ns = namespace(colors=['#e07a1f','#3b82f6','#10b981','#8b5cf6','#ef4444','#1976d2','#06b6d4','#ec4899']) %}
+          {% set area_groups = {} %}
+          {% for row in rows %}
+            {% if row.area not in area_groups %}
+              {% set _ = area_groups.update({row.area: []}) %}
+            {% endif %}
+            {% set _ = area_groups[row.area].append(row) %}
+          {% endfor %}
+
+          {% for area, items in area_groups.items() %}
+          {% set color = ns.colors[loop.index0 % ns.colors | length] %}
+          {% set area_total = items | sum(attribute='total_mins') %}
+          <div class="tl-group" data-area="{{ area }}" data-total="{{ area_total }}">
+            <div class="tl-node" style="background:{{ color }}">{{ loop.index }}</div>
+            <div class="tl-area-header">
+              <span class="tl-area-name">{{ area }}</span>
+              <span class="tl-area-count">{{ items | length }} op{{ 's' if items | length != 1 else '' }}</span>
+              <span class="tl-area-total">{{ area_total | round(2) }} min</span>
+            </div>
+            <div class="tl-items">
+              {% for row in items %}
+              <div class="tl-item" style="animation-delay:{{ loop.index0 * 0.05 }}s">
+                <div class="tl-item-left">
+                  <span class="tl-subprocess">{{ row.subprocess }}</span>
+                  <span class="tl-group-name">{{ row.group }}</span>
+                </div>
+                <div class="tl-item-right">
+                  <span class="tl-qty">× {{ row.quantity | int }} piezas</span>
+                  <span class="tl-mins">{{ row.total_mins | round(2) }} min</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- PANEL DERECHO -->
+      <div class="right-col">
+
+        <!-- TOTALES -->
+        <div class="totals-card">
+          <div class="totals-head">Resumen de tiempos</div>
+          <div class="totals-body">
+            <div class="total-row">
+              <span class="tr-label">Producción</span>
+              <span class="tr-val">{{ production_minutes | round(2) }} min</span>
+            </div>
+            <div class="total-row">
+              <span class="tr-label">Empaque</span>
+              <span class="tr-val">{{ packaging_minutes }} min</span>
+            </div>
+            <div class="total-row highlight">
+              <span class="tr-label">Total sin colchón</span>
+              <span class="tr-val">{{ (production_minutes + packaging_minutes) | round(2) }} min</span>
+            </div>
+            <div class="total-row">
+              <span class="tr-label">Colchón ({{ cushion_pct }}%)</span>
+              <span class="tr-val">+{{ ((production_minutes + packaging_minutes) * cushion_pct / 100) | round(2) }} min</span>
+            </div>
+            <div class="total-row">
+              <span class="tr-label">Total con colchón</span>
+              <span class="tr-val">{{ (total_hours_with_cushion * 60) | round(2) }} min</span>
+            </div>
+            <div class="total-row">
+              <span class="tr-label">Horas con colchón</span>
+              <span class="tr-val">{{ total_hours_with_cushion | round(2) }} h</span>
+            </div>
+            <div class="total-row grand">
+              <span class="tr-label">Días estimados</span>
+              <span class="tr-val">{{ days_with_cushion | round(2) }} días</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DESGLOSE POR ÁREA -->
+        <div class="area-breakdown">
+          <div class="ab-head"><span class="odot"></span>Distribución por área</div>
+          <div class="ab-body" id="ab-body">
+            <!-- generado por JS -->
+          </div>
+        </div>
+
+        {% if materials %}
+        <!-- MATERIAL SUGERIDO -->
+        <div class="mat-card">
+          <div class="mat-head"><span class="odot"></span>Material sugerido</div>
+          <div class="mat-note-global"><i class="fa-solid fa-circle-info" style="color:#059669"></i>&nbsp; El color depende de la variabilidad del componente.</div>
+          <div class="mat-list">
+            {% for m in materials %}
+            <div class="mat-item">
+              <span class="mat-tag">{{ m.area }}</span>
+              <span class="mat-name">{{ m.material }}</span>
+              <span class="mat-note">{{ m.note }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div><!-- /right-col -->
+    </div><!-- /two-col -->
+
+    <div class="actions">
+      <a href="{{ url_for('index') }}" class="btn btn-primary">← Calcular otro anuncio</a>
+      <button type="button" class="btn btn-outline" onclick="window.print()">Imprimir</button>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /content -->
+
+<script>
+  const _rows = {{ rows | tojson | safe }};
+  const _calc = {
+    prod:  {{ production_minutes | round(2) }},
+    pkg:   {{ packaging_minutes }},
+    hours: {{ total_hours | round(2) }},
+    cush:  {{ cushion_pct }},
+    hCush: {{ total_hours_with_cushion | round(2) }},
+    days:  {{ days_with_cushion | round(2) }},
+    hpd:   {{ hours_per_day }},
+  };
+
+  /* Contadores animados */
+  function animateCounter(el, target, decimals, delay) {
+    setTimeout(() => {
+      const start = performance.now(), dur = 1100;
+      const run = now => {
+        const p = Math.min((now - start) / dur, 1);
+        el.textContent = (target * (1 - Math.pow(1 - p, 4))).toFixed(decimals);
+        if (p < 1) requestAnimationFrame(run);
+      };
+      requestAnimationFrame(run);
+    }, delay);
+  }
+  document.querySelectorAll('.s-num').forEach((el, i) =>
+    animateCounter(el, parseFloat(el.dataset.target) || 0, parseInt(el.dataset.dec) || 2, 80 + i * 120)
+  );
+
+  /* Distribución por área con barras */
+  (function buildAreaBars() {
+    const totalProd = _calc.prod;
+    const groups = {};
+    _rows.forEach(r => { groups[r.area] = (groups[r.area] || 0) + r.total_mins; });
+    const colors = ['#e07a1f','#3b82f6','#10b981','#8b5cf6','#ef4444','#1976d2','#06b6d4','#ec4899'];
+    const body = document.getElementById('ab-body');
+    Object.entries(groups).forEach(([area, mins], i) => {
+      const pct = totalProd > 0 ? (mins / totalProd * 100) : 0;
+      const color = colors[i % colors.length];
+      const item = document.createElement('div');
+      item.className = 'ab-item';
+      item.innerHTML = `
+        <div class="ab-top">
+          <span class="ab-name" style="color:${color}">${area}</span>
+          <span class="ab-pct">${mins.toFixed(1)} min &bull; ${pct.toFixed(1)}%</span>
+        </div>
+        <div class="ab-bar"><div class="ab-fill" style="width:0%;background:${color}" data-w="${pct.toFixed(1)}"></div></div>`;
+      body.appendChild(item);
+    });
+    /* Animar barras */
+    setTimeout(() => {
+      document.querySelectorAll('.ab-fill').forEach(el => { el.style.width = el.dataset.w + '%'; });
+    }, 400);
+  })();
+
+  /* Copiar resumen */
+  function copySummary() {
+    const rowLines = _rows.map(r =>
+      `${r.area} › ${r.subprocess} › ${r.group}  ×${r.quantity}  →  ${r.total_mins.toFixed(2)} min`
+    );
+    const text = [
+      'Resultado SMV – Lumicolor',
+      '─'.repeat(38),
+      ...rowLines,
+      '─'.repeat(38),
+      `Producción: ${_calc.prod.toFixed(2)} min`,
+      `Empaque: ${_calc.pkg} min`,
+      `Total: ${(_calc.prod + _calc.pkg).toFixed(2)} min  (${_calc.hours.toFixed(2)} h)`,
+      `Con ${_calc.cush}% colchón: ${_calc.hCush.toFixed(2)} h  →  ${_calc.days.toFixed(2)} días`,
+      `Jornada: ${_calc.hpd} h/día`,
+    ].join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      document.getElementById('copy-ok').style.display = 'inline';
+      setTimeout(() => document.getElementById('copy-ok').style.display = 'none', 2500);
+      showToast('Resumen copiado al portapapeles', 'success');
+    }).catch(() => showToast('No se pudo copiar', 'info'));
+  }
+
+  /* Toast */
+  function showToast(msg, type) {
+    const rack = document.getElementById('toast-rack');
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.innerHTML = `<span>${msg}</span>`;
+    el.addEventListener('click', () => { el.classList.remove('in'); setTimeout(() => el.remove(), 350); });
+    rack.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('in')));
+    setTimeout(() => { el.classList.remove('in'); setTimeout(() => el.remove(), 350); }, 3000);
+  }
+
+  window.addEventListener('load', () => setTimeout(() => showToast('Cálculo completado correctamente', 'success'), 600));
+</script>
+
+</body>
+</html>

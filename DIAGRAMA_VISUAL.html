@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora SMV Lumicolor — Diagrama Visual</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #0d0d1a;
+      color: #ccd;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    h1 {
+      text-align: center;
+      color: #7eb8f7;
+      font-size: 2.2em;
+      margin-bottom: 0.2em;
+      text-shadow: 0 0 40px rgba(126,184,247,0.35);
+      letter-spacing: 0.04em;
+    }
+    .subtitle {
+      text-align: center;
+      color: #556;
+      font-size: 0.88em;
+      margin-bottom: 3rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    section {
+      background: linear-gradient(135deg, #13131f 0%, #1a1a2e 100%);
+      border: 1px solid #2a2a4a;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.5);
+    }
+    section h2 {
+      color: #a78bfa;
+      font-size: 0.78em;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1.4rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid #2a2a4a;
+    }
+    .mermaid { overflow-x: auto; padding: 0.5rem 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+    th { background: #1e1e36; color: #a78bfa; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.82em; letter-spacing: 0.06em; text-transform: uppercase; }
+    td { padding: 9px 14px; border-bottom: 1px solid #1e1e36; color: #aab; }
+    tr:hover td { background: #1a1a30; }
+    code {
+      background: #1e1e36;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      color: #7ec8f7;
+      font-size: 0.9em;
+    }
+    .legend {
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75em;
+      color: #778;
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Priority cards */
+    .priority-grid { display: grid; gap: 0.6rem; }
+    .pcard {
+      display: flex;
+      gap: 1rem;
+      align-items: stretch;
+    }
+    .pnum {
+      border-radius: 10px;
+      padding: 1rem;
+      flex: 0 0 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5em;
+      font-weight: 900;
+    }
+    .pbody {
+      border-radius: 10px;
+      padding: 0.9rem 1.2rem;
+      flex: 1;
+    }
+    .ptitle { font-weight: 700; font-size: 0.85em; }
+    .pdesc { color: #778; font-size: 0.78em; margin-top: 0.25em; font-family: monospace; }
+  </style>
+</head>
+<body>
+
+<h1>Calculadora SMV — Lumicolor</h1>
+<p class="subtitle">Diagrama técnico completo &nbsp;·&nbsp; Todos los flujos y casos</p>
+
+
+<!-- 1. Flujo general -->
+<section>
+  <h2>1 &nbsp;·&nbsp; Flujo General de la Aplicación</h2>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#1e3a5f;border:1.5px solid #4a90d9"></div>Inicio / Fin</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3a2a0f;border:1.5px solid #f0a020"></div>Decisión</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1a3a1a;border:1.5px solid #4a9a4a"></div>Acción</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2a1a3a;border:1.5px solid #9a4af0"></div>Cálculo</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3a1a1a;border:1.5px solid #d04040"></div>Error</div>
+  </div>
+  <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"primaryColor":"#1e3a5f","primaryTextColor":"#fff","primaryBorderColor":"#4a90d9","lineColor":"#4a6a8a","secondaryColor":"#1a1a2e","tertiaryColor":"#22223a","edgeLabelBackground":"#1a1a2e"}}}%%
+flowchart TD
+    classDef start fill:#1e3a5f,stroke:#4a90d9,color:#fff,font-weight:bold
+    classDef dec fill:#3a2a0f,stroke:#f0a020,color:#ffe
+    classDef act fill:#1a2a1a,stroke:#4a9a4a,color:#dfd
+    classDef calc fill:#2a1a3a,stroke:#9a4af0,color:#edf
+    classDef err fill:#3a1a1a,stroke:#d04040,color:#fdd
+    classDef io fill:#1a2a3a,stroke:#4a7ab0,color:#ddf
+
+    START(["Usuario abre /"]):::start
+    LOAD["Carga times.json\nConstruye REGRESSIONS\npor area/subproceso"]:::act
+    IMG_Q{"Sube imagen?"}:::dec
+    ANALYZE["POST /api/analyze"]:::io
+    NO_IMG["detectedHeight = null\ndetectedWidth = null\ndetectedPieces = null"]:::io
+    AI_Q{"OPENAI_API_KEY\ndisponible?"}:::dec
+    GPT["GPT-4o\npieces · width_cm · height_cm"]:::calc
+    CV2_Q{"OpenCV\ndisponible?"}:::dec
+    OCR["OCR Tesseract + Contornos\nlee medidas · cuenta piezas"]:::act
+    EMPTY["width_cm = null\nheight_cm = null\npieces = 0"]:::io
+    CALCANCHO["anchoPorPieza = width ÷ max(pieces,1)\ndetectedHeight = height_cm\ndetectedWidth = anchoPorPieza\ndetectedPieces = pieces"]:::calc
+    PANEL["Panel de análisis\nUsuario revisa y ajusta\nAlto / Ancho / Piezas"]:::act
+    APPLY["applyAnalysis:\nRecalcula badges de tiempo\nAsigna qty = pieces a filas"]:::calc
+    SELECT["Usuario marca checkboxes\nde subprocesos por area"]:::act
+    CGR["computeGroupResult por subproceso\nActualiza badge en tiempo real"]:::calc
+    PARAMS["Configura parametros:\nHoras/dia · Empaque · Secado · Colchon"]:::act
+    SUBMIT["Submit: inyecta hidden inputs\nareas · subprocesses · groups\nquantities · widths · heights"]:::act
+    BACKEND["Backend calcula tiempo\npor fila (ver diagrama 3)"]:::calc
+    ERR_Q{"Filas\ncon error?"}:::dec
+    FLASH["flash + redirect /\nMuestra errores al usuario"]:::err
+    SAVE["Guarda Calculation en BD\nRedirect /result/id"]:::act
+    RESULT(["Pagina /result/id"]):::start
+
+    START --> LOAD --> IMG_Q
+    IMG_Q -- Si --> ANALYZE
+    IMG_Q -- No --> NO_IMG
+    ANALYZE --> AI_Q
+    AI_Q -- Si --> GPT
+    AI_Q -- No --> CV2_Q
+    CV2_Q -- Si --> OCR
+    CV2_Q -- No --> EMPTY
+    GPT --> CALCANCHO
+    OCR --> CALCANCHO
+    EMPTY --> CALCANCHO
+    CALCANCHO --> PANEL --> APPLY --> SELECT
+    NO_IMG --> SELECT
+    SELECT --> CGR --> PARAMS --> SUBMIT --> BACKEND
+    BACKEND --> ERR_Q
+    ERR_Q -- Si --> FLASH
+    ERR_Q -- No --> SAVE --> RESULT
+  </div>
+</section>
+
+
+<!-- 2. Análisis de imagen -->
+<section>
+  <h2>2 &nbsp;·&nbsp; Análisis de Imagen — /api/analyze</h2>
+  <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"lineColor":"#4a6a8a","edgeLabelBackground":"#1a1a2e"}}}%%
+flowchart LR
+    classDef ia fill:#1e3a5f,stroke:#4a90d9,color:#ddf
+    classDef cv fill:#1a3a1a,stroke:#4a9a4a,color:#dfd
+    classDef resp fill:#2a1a3a,stroke:#9a4af0,color:#edf
+    classDef js fill:#3a2a0f,stroke:#f0a020,color:#ffe
+    classDef dec fill:#3a3a1a,stroke:#d0c040,color:#ffd
+
+    subgraph IA ["Ruta IA  (AI_AVAILABLE = True)"]
+        A1["Codifica en base64"]:::ia
+        A2["OpenAI GPT-4o\nprompt estructurado"]:::ia
+        A3["JSON:\npieces · width_cm · height_cm"]:::ia
+        A1 --> A2 --> A3
+    end
+
+    subgraph CV2P ["Ruta OpenCV  (CV2_AVAILABLE = True, sin IA)"]
+        B1["cv2.imread\nfallback: PIL si cv2 falla"]:::cv
+        B2["Escala de grises"]:::cv
+        B3["OCR Tesseract PSM 11,6,3,4\nRegex: dd.dd cm / ddd cm\nFiltro: 5–2000 cm\nwidth = valor mayor\nheight = segundo mayor"]:::cv
+        B4["CLAHE clipLimit=2 tile=8x8\n8 variantes threshold\nFiltro area 0.1%–60%\nno toca borde (1.5%)\naspect ratio 0.08–12\nbest_count · best_boxes"]:::cv
+        B5["Bounding boxes numerados\nguarda *_analyzed.jpg"]:::cv
+        B1 --> B2
+        B2 --> B3
+        B2 --> B4
+        B3 --> B5
+        B4 --> B5
+    end
+
+    subgraph RESP ["Respuesta JSON"]
+        C1["width_cm · height_cm · pieces\noriginal_url · annotated_url · image_url\ncv2_available · ocr_available · ai_available\nimg_read · file_saved · filename"]:::resp
+    end
+
+    subgraph JS_POST ["JS tras recibir respuesta"]
+        D1["anchoPorPieza = width ÷ max(pieces,1)"]:::js
+        D2["Rellena panel:\nval-height · val-width · val-pieces"]:::js
+        D3{"img_read = false?"}:::dec
+        D4["Toast: No se pudo\nleer la imagen"]:::dec
+        D5{"sin height NI\nwidth NI pieces?"}:::dec
+        D6["Toast: Sin datos\ningresa manualmente"]:::dec
+        D7{"solo pieces\nsin medidas?"}:::dec
+        D8["Toast: Piezas OK\nmedidas manuales"]:::dec
+        D9{"solo medidas\nsin pieces?"}:::dec
+        D10["Toast: Medidas OK\npiezas manuales"]:::dec
+        D11["Toast: Todo detectado\nanchoxalto cm/pieza · N pieza(s)"]:::js
+        D12["Llama applyAnalysis()\nautomaticamente"]:::js
+
+        D1 --> D2 --> D3
+        D3 -- Si --> D4
+        D3 -- No --> D5
+        D5 -- Si --> D6
+        D5 -- No --> D7
+        D7 -- Si --> D8
+        D7 -- No --> D9
+        D9 -- Si --> D10
+        D9 -- No --> D11
+        D4 --> D12
+        D6 --> D12
+        D8 --> D12
+        D10 --> D12
+        D11 --> D12
+    end
+
+    A3 --> RESP
+    B5 --> RESP
+    RESP --> JS_POST
+  </div>
+</section>
+
+
+<!-- 3. Árbol de decisión -->
+<section>
+  <h2>3 &nbsp;·&nbsp; Árbol de Decisión — Cálculo de Tiempo por Subproceso</h2>
+  <p style="font-size:0.8em;color:#556;margin-bottom:1.2rem;letter-spacing:0.05em">Frontend JS y Backend Python siguen exactamente la misma lógica de prioridad.</p>
+  <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"lineColor":"#4a6a8a","edgeLabelBackground":"#1a1a2e"}}}%%
+flowchart TD
+    classDef dec fill:#3a2a0f,stroke:#f0a020,color:#ffe
+    classDef in fill:#1e2a3a,stroke:#4a7ab0,color:#ddf
+    classDef p1 fill:#003a00,stroke:#40c040,color:#cfc,font-weight:bold
+    classDef p2 fill:#3a3a00,stroke:#d0c000,color:#ffd
+    classDef p3 fill:#002a3a,stroke:#40a0f0,color:#cdf
+    classDef p4 fill:#3a0000,stroke:#d04040,color:#fcc
+
+    IN["Entrada:\narea · subproceso · group · height · width"]:::in
+
+    CHECK_RANGE{"height <= maxX catalogo\n(o sin height, o sin rango)?"}:::dec
+    TRY_CAT["Busca entrada en catalogo\npor altura mas cercana"]:::in
+    F1["PRIORIDAD 1 — Catalogo\nmins = catalog[area][sub][group].tiempo\nextrapolado = false · badge NORMAL"]:::p1
+
+    E2a{"ENSAMBLE sin flange\n+ ancho disponible?"}:::dec
+    F2a["PRIORIDAD 2a — Formula ENSAMBLE\nmins = (0.2545 + 0.01067 x ancho) x 60\nextrapolado = true · badge AMARILLO"]:::p2
+
+    E2b{"height AND\nregresion disponible?"}:::dec
+    F2b["PRIORIDAD 2b — Regresion lineal\nmins = max(a + b x height, 0.1)\nextrapolado = true · badge AMARILLO"]:::p2
+
+    E3{"Existe alguna entrada\nen el catalogo?"}:::dec
+    F3["PRIORIDAD 3 — Aproximacion mas cercana\nEntrada con altura mas proxima\nextrapolado = true · badge AMARILLO"]:::p3
+
+    F4["PRIORIDAD 4 — Sin datos\nJS: mins=0, badge 0 min\nPython: ValueError -> fila con error"]:::p4
+
+    IN --> CHECK_RANGE
+    CHECK_RANGE -- Si, dentro de rango --> TRY_CAT
+    TRY_CAT -- Encontrada --> F1
+    TRY_CAT -- No encontrada --> E2a
+    CHECK_RANGE -- No, fuera de rango --> E2a
+    E2a -- Si --> F2a
+    E2a -- No --> E2b
+    E2b -- Si --> F2b
+    E2b -- No --> E3
+    E3 -- Si --> F3
+    E3 -- No --> F4
+  </div>
+</section>
+
+
+<!-- 4. Regresiones -->
+<section>
+  <h2>4 &nbsp;·&nbsp; Construcción de Regresiones (build_regressions)</h2>
+  <p style="font-size:0.8em;color:#556;margin-bottom:1.2rem;letter-spacing:0.05em">Se ejecuta al iniciar la app y en cada request GET. Solo genera regresion si hay 3+ puntos con pendiente positiva.</p>
+  <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"lineColor":"#4a6a8a","edgeLabelBackground":"#1a1a2e"}}}%%
+flowchart LR
+    classDef act fill:#1a2a1a,stroke:#4a9a4a,color:#dfd
+    classDef dec fill:#3a2a0f,stroke:#f0a020,color:#ffe
+    classDef calc fill:#2a1a3a,stroke:#9a4af0,color:#edf
+    classDef skip fill:#3a1a1a,stroke:#d04040,color:#fdd
+    classDef save fill:#1e3a5f,stroke:#4a90d9,color:#ddf
+
+    R0["Para cada (area, subproceso)\nen catalog"]:::act
+    R1{"ENSAMBLE\nsin flange?"}:::dec
+    R_SKIP1["Omitir\ntiene formula propia"]:::skip
+    R2["Extrae pares (x, y):\nx = promedio de alturas en desc\n'2x30-40cm' -> x=35\ny = tiempo (min)"]:::act
+    R3{"n >= 3\npares (x,y)?"}:::dec
+    R_SKIP2["Omitir\nmenos de 3 puntos"]:::skip
+    R4["Regresion lineal simple:\nb = (nSxy - SxSy) / (nSx2 - (Sx)2)\na = (Sy - bSx) / n"]:::calc
+    R5{"b > 0\npendiente positiva?"}:::dec
+    R_SKIP3["Omitir\npendiente negativa"]:::skip
+    R6["Guarda en REGRESSIONS:\n(area, sub) -> { a, b, minX, maxX }"]:::save
+
+    R0 --> R1
+    R1 -- Si --> R_SKIP1
+    R1 -- No --> R2 --> R3
+    R3 -- No --> R_SKIP2
+    R3 -- Si --> R4 --> R5
+    R5 -- No --> R_SKIP3
+    R5 -- Si --> R6
+  </div>
+</section>
+
+
+<!-- 5. Fórmulas finales -->
+<section>
+  <h2>5 &nbsp;·&nbsp; Fórmulas Finales y Resultados</h2>
+  <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"lineColor":"#4a6a8a","edgeLabelBackground":"#1a1a2e"}}}%%
+flowchart LR
+    classDef calc fill:#2a1a3a,stroke:#9a4af0,color:#edf
+    classDef db fill:#1e3a5f,stroke:#4a90d9,color:#ddf
+    classDef out fill:#003a00,stroke:#40c040,color:#cfc
+
+    ROWS["Filas procesadas:\ncada fila tiene\nmins_por_pieza y qty"]:::calc
+    PROD["production_minutes\n= S(mins_por_pieza x qty)\n+ secado_minutes\n+ packaging_minutes"]:::calc
+    HRS["total_hours\n= production_minutes / 60"]:::calc
+    CUSH["total_hours_cushion\n= total_hours x (1 + cushion_pct / 100)"]:::calc
+    DAYS["days         = total_hours         / hours_per_day\ndays_cushion = total_hours_cushion / hours_per_day"]:::calc
+    DB["Guarda Calculation en BD:\nname · user_id · created_at\nrows_json · params_json\nresults_json · image_url"]:::db
+    SHOW["Pagina /result/id\nTabla de tiempos\nDias estimados con y sin colchon"]:::out
+
+    ROWS --> PROD --> HRS --> CUSH --> DAYS --> DB --> SHOW
+  </div>
+</section>
+
+
+<!-- 6. Parámetros -->
+<section>
+  <h2>6 &nbsp;·&nbsp; Parámetros y Valores por Defecto</h2>
+  <table>
+    <tr><th>Parámetro</th><th>Default</th><th>Dónde se usa</th></tr>
+    <tr><td><code>hours_per_day</code></td><td>9 h</td><td>Divide <code>total_hours</code> para obtener días</td></tr>
+    <tr><td><code>packaging_minutes</code></td><td>40 min</td><td>Se suma a <code>production_minutes</code></td></tr>
+    <tr><td><code>secado_minutes</code></td><td>120 min</td><td>Se suma a <code>production_minutes</code></td></tr>
+    <tr><td><code>cushion_pct</code></td><td>10 %</td><td>Multiplica <code>total_hours</code> por <code>1 + cushion/100</code></td></tr>
+    <tr><td><code>anchoPorPieza</code></td><td><code>width_cm ÷ max(pieces, 1)</code></td><td>Solo para ENSAMBLE sin flange</td></tr>
+  </table>
+</section>
+
+
+<!-- 7. Prioridades visuales -->
+<section>
+  <h2>7 &nbsp;·&nbsp; Prioridad de Cálculo — Resumen Visual</h2>
+  <div class="priority-grid">
+
+    <div class="pcard">
+      <div class="pnum" style="background:#003a00;border:2px solid #40c040;color:#50d060">1</div>
+      <div class="pbody" style="background:#1e1e2e;border:1.5px solid #40c040">
+        <div class="ptitle" style="color:#50d060">Catálogo — alto dentro del rango conocido</div>
+        <div class="pdesc">Tiempo exacto del catálogo &nbsp;·&nbsp; badge NORMAL &nbsp;·&nbsp; extrapolado = false</div>
+      </div>
+    </div>
+
+    <div class="pcard">
+      <div class="pnum" style="background:#3a3800;border:2px solid #d0c000;color:#d0c040">2a</div>
+      <div class="pbody" style="background:#1e1e2e;border:1.5px solid #d0c000">
+        <div class="ptitle" style="color:#d0c040">ENSAMBLE sin flange + ancho disponible (alto fuera de rango)</div>
+        <div class="pdesc">mins = (0.2545 + 0.01067 × ancho_cm) × 60 &nbsp;·&nbsp; badge AMARILLO &nbsp;·&nbsp; extrapolado = true</div>
+      </div>
+    </div>
+
+    <div class="pcard">
+      <div class="pnum" style="background:#3a3800;border:2px solid #d0c000;color:#d0c040">2b</div>
+      <div class="pbody" style="background:#1e1e2e;border:1.5px solid #d0c000">
+        <div class="ptitle" style="color:#d0c040">Regresión lineal — alto fuera de rango + regresión disponible</div>
+        <div class="pdesc">Extrapolación &nbsp;·&nbsp; badge AMARILLO &nbsp;·&nbsp; mins = max(a + b × height, 0.1) &nbsp;·&nbsp; extrapolado = true</div>
+      </div>
+    </div>
+
+    <div class="pcard">
+      <div class="pnum" style="background:#002a3a;border:2px solid #40a0f0;color:#50b8f0">3</div>
+      <div class="pbody" style="background:#1e1e2e;border:1.5px solid #40a0f0">
+        <div class="ptitle" style="color:#50b8f0">Aproximación más cercana del catálogo</div>
+        <div class="pdesc">Entrada con altura más próxima &nbsp;·&nbsp; badge AMARILLO &nbsp;·&nbsp; extrapolado = true</div>
+      </div>
+    </div>
+
+    <div class="pcard">
+      <div class="pnum" style="background:#3a0000;border:2px solid #d04040;color:#d06060">4</div>
+      <div class="pbody" style="background:#1e1e2e;border:1.5px solid #d04040">
+        <div class="ptitle" style="color:#d06060">Sin catálogo · sin regresión · sin alto</div>
+        <div class="pdesc">JS: mins = 0, badge "0 min" &nbsp;·&nbsp; Python: ValueError → fila con error al usuario</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- 8. ENSAMBLE sin flange -->
+<section>
+  <h2>8 &nbsp;·&nbsp; Fórmula ENSAMBLE sin Flange — Detalle</h2>
+  <table>
+    <tr><th>Concepto</th><th>Detalle</th></tr>
+    <tr><td>Fórmula</td><td><code>mins = (0.2545 + 0.01067 × ancho_cm) × 60</code></td></tr>
+    <tr><td>Origen</td><td>Regresión histórica específica del área ENSAMBLE</td></tr>
+    <tr><td>Parámetro</td><td><code>widthCm</code> = ancho <strong>por pieza</strong> — no el ancho total del letrero</td></tr>
+    <tr><td>Aplica</td><td>Solo al subproceso exacto <code>"Ensamble sin flange"</code></td></tr>
+    <tr><td>En <code>build_regressions</code></td><td>Excluida — se omite para no generar una regresión redundante</td></tr>
+    <tr><td><code>anchoPorPieza</code></td><td><code>width_cm ÷ max(pieces, 1)</code> — calculado en JS tras el análisis de imagen</td></tr>
+  </table>
+</section>
+
+
+<!-- 9. Submit JS -->
+<section>
+  <h2>9 &nbsp;·&nbsp; Flujo Submit del Formulario (JS)</h2>
+  <div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"lineColor":"#4a6a8a","edgeLabelBackground":"#1a1a2e"}}}%%
+flowchart LR
+    classDef act fill:#1a2a1a,stroke:#4a9a4a,color:#dfd
+    classDef dec fill:#3a2a0f,stroke:#f0a020,color:#ffe
+    classDef warn fill:#3a1a1a,stroke:#d04040,color:#fdd
+    classDef io fill:#1e3a5f,stroke:#4a90d9,color:#ddf
+
+    S1["Usuario hace clic\nen Calcular"]:::act
+    S2{"Al menos 1\nsubproceso\nmarcado?"}:::dec
+    S3["Toast WARN\nshake al area-grid\nNo envia el formulario"]:::warn
+    S4["Sincroniza qty de cada\nsub-item desde input visible"]:::act
+    S5["Elimina todos los\n.auto-hidden anteriores"]:::act
+    S6["Para cada item en selectedItems:\ninyecta inputs hidden:\nareas[]\nsubprocesses[]\ngroups[]\nquantities[]\nwidths[]   (vacio si no es ENSAMBLE sin flange)\nheights[]  (vacio si no hay medida)"]:::act
+    S7["Deshabilita boton Submit\nMuestra spinner"]:::act
+    S8["POST / con form multipart"]:::io
+
+    S1 --> S2
+    S2 -- No --> S3
+    S2 -- Si --> S4 --> S5 --> S6 --> S7 --> S8
+  </div>
+</section>
+
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#0d0d1a',
+      primaryColor: '#1e3a5f',
+      primaryTextColor: '#ffffff',
+      primaryBorderColor: '#4a90d9',
+      lineColor: '#4a7090',
+      secondaryColor: '#1a1a2e',
+      tertiaryColor: '#22223a',
+      clusterBkg: '#13131f',
+      clusterBorder: '#2a2a4a',
+      titleColor: '#a78bfa',
+      edgeLabelBackground: '#1a1a2e',
+    },
+    flowchart: {
+      htmlLabels: true,
+      curve: 'basis',
+    }
+  });
+</script>
+
+</body>
+</html>

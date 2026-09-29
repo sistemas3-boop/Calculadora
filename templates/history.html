@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Historial &ndash; Lumicolor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --sidebar:      #0f172a;
+      --sidebar-2:    #1e293b;
+      --orange:       #1565c0;
+      --orange-dk:    #0d47a1;
+      --orange-light: #eff6ff;
+      --orange-bg:    rgba(21,101,192,.13);
+      --green:        #10b981;
+      --green-light:  #ecfdf5;
+      --green-dark:   #065f46;
+      --red:          #ef4444;
+      --bg:           #f1f5f9;
+      --card:         #ffffff;
+      --text:         #0f172a;
+      --muted:        #64748b;
+      --border:       #e2e8f0;
+      --input-bg:     #f8fafc;
+      --radius:       10px;
+      --radius-sm:    7px;
+      --shadow:       0 1px 3px rgba(0,0,0,.07);
+      --t:            .15s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "DM Sans", system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+    /* ══ SIDEBAR ══ */
+    .sidebar { width: 228px; flex-shrink: 0; background: var(--sidebar); height: 100vh; position: sticky; top: 0; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,.05); }
+    .sb-brand { padding: 1.1rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,.08); position: relative; display:flex; align-items:center; gap:.75rem; }
+    .sb-brand::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--orange); }
+    .sb-logo-icon { width:34px; height:34px; border-radius:8px; background:var(--orange); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 10px rgba(21,101,192,.45); }
+    .sb-logo-icon svg { width:18px; height:18px; fill:none; stroke:white; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .sb-brand-name { font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: -.01em; }
+    .sb-brand-sub  { font-size: .67rem; color: rgba(255,255,255,.35); margin-top: .1rem; letter-spacing:.03em; text-transform:uppercase; }
+    .sb-divider    { height: 1px; background: rgba(255,255,255,.06); margin: .35rem .6rem; }
+    .sb-nav { padding: .3rem .6rem; flex: 1; display: flex; flex-direction: column; gap: .05rem; overflow-y: auto; }
+    .nav-item { display: flex; align-items: center; gap: .6rem; padding: .52rem .75rem; border-radius: var(--radius-sm); color: rgba(255,255,255,.45); font-size: .82rem; font-weight: 500; text-decoration: none; transition: all var(--t); border-left: 3px solid transparent; }
+    .nav-item:hover { background: rgba(255,255,255,.05); color: rgba(255,255,255,.75); }
+    .nav-item.active { color: #fff; font-weight: 600; border-left-color: var(--orange); background: rgba(255,255,255,.06); }
+    .nav-icon { width: 16px; text-align: center; font-size: .9rem; }
+    .sb-footer { padding: .75rem 1rem; border-top: 1px solid rgba(255,255,255,.06); display: flex; align-items: center; gap: .6rem; }
+    .avatar { width: 30px; height: 30px; border-radius: 6px; flex-shrink: 0; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: .68rem; font-weight: 700; color: white; }
+    .sb-user-name { font-size: .77rem; font-weight: 600; color: rgba(255,255,255,.8); }
+    .sb-user-role { font-size: .63rem; color: rgba(255,255,255,.3); margin-top: .05rem; }
+    .sb-logout { margin-left: auto; font-size: .7rem; color: rgba(255,255,255,.3); text-decoration: none; padding: .25rem .4rem; border-radius: 4px; transition: all var(--t); }
+    .sb-logout:hover { color: var(--red); background: rgba(239,68,68,.12); }
+
+    /* ══ CONTENT ══ */
+    .content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+    /* ══ TOPBAR ══ */
+    .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 54px; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 10; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: .8rem; }
+    .t-btn { width: 32px; height: 32px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--muted); cursor: pointer; transition: background var(--t); text-decoration: none; }
+    .t-btn:hover { background: var(--input-bg); color: var(--text); }
+    .status-pill { display: flex; align-items: center; gap: .35rem; font-size: .72rem; font-weight: 700; color: var(--orange); letter-spacing: .08em; text-transform: uppercase; background: var(--orange-light); border: 1px solid rgba(21,101,192,.25); padding: .28rem .65rem; border-radius: 99px; }
+    .s-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); animation: onlinePulse 2s ease infinite; }
+    @keyframes onlinePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.3)} }
+
+    .page { padding: 1.75rem 2rem 4rem; overflow-y: auto; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-title { font-size: 1.55rem; font-weight: 800; letter-spacing: -.02em; text-transform: uppercase; }
+    .page-sub { font-size: .83rem; color: var(--muted); margin-top: .3rem; }
+
+    /* ══ ALERT ══ */
+    .alert { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: .75rem 1rem; margin-bottom: 1.1rem; font-size: .84rem; color: #1e3a8a; display: flex; gap: .5rem; }
+    .alert ul { margin: .3rem 0 0; padding-left: 1.3rem; }
+
+    /* ══ CARD ══ */
+    .card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+    .card-head { padding: .75rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+    .ch-label { font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: .45rem; }
+    .ch-label .odot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
+    .ch-badge { margin-left: auto; font-size: .62rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; background: var(--input-bg); color: var(--muted); border: 1px solid var(--border); padding: .16rem .5rem; border-radius: 99px; }
+
+    /* ══ SEARCH ══ */
+    .head-search {
+      display: flex; align-items: center; gap: .4rem;
+      background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: .3rem .7rem;
+      font-size: .8rem;
+    }
+    .head-search input { border: none; background: transparent; font-size: .8rem; color: var(--text); width: 180px; outline: none; font-family: inherit; }
+    .head-search input::placeholder { color: var(--muted); }
+    .search-ico { font-size: .7rem; color: var(--muted); }
+    .clear-search { font-size: .72rem; color: var(--muted); cursor: pointer; background: none; border: none; padding: .1rem; display: none; }
+    .clear-search:hover { color: var(--text); }
+
+    /* ══ TABLE ══ */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    thead { background: var(--input-bg); }
+    th { padding: .6rem .85rem; text-align: left; font-size: .67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; transition: color var(--t); }
+    th:hover { color: var(--text); }
+    th .sort-ico { margin-left: .3rem; opacity: .35; font-size: .6rem; }
+    th.sorted .sort-ico { opacity: 1; color: var(--orange); }
+    td { padding: .58rem .85rem; font-size: .84rem; border-bottom: 1px solid var(--border); vertical-align: middle; transition: background var(--t); }
+    tr:last-child td { border-bottom: none; }
+    tr.data-row:hover td { background: var(--orange-light); }
+    tr.data-row { animation: rowIn .2s ease both; }
+    @keyframes rowIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+    tr.hidden-row { display: none; }
+
+    .calc-name { font-weight: 600; color: var(--text); }
+    .calc-date { color: var(--muted); font-size: .78rem; }
+    .calc-user { font-size: .78rem; color: var(--muted); display:flex; align-items:center; gap:.35rem; }
+    .val-pill { font-size: .78rem; font-weight: 700; color: var(--orange); background: var(--orange-light); border: 1px solid rgba(21,101,192,.2); padding: .12rem .5rem; border-radius: 99px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    /* ══ BUTTONS ══ */
+    .btn { display: inline-flex; align-items: center; gap: .3rem; padding: .35rem .75rem; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: .78rem; font-weight: 600; font-family: inherit; transition: all var(--t); text-decoration: none; white-space: nowrap; }
+    .btn:active { transform: scale(.96); }
+    .btn-view { background: var(--sidebar); color: white; }
+    .btn-view:hover { background: var(--sidebar-2); }
+    .btn-del  { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+    .btn-del:hover { background: #fee2e2; }
+    .actions-cell { display: flex; gap: .4rem; align-items: center; }
+
+    /* ══ EMPTY ══ */
+    .empty-state { text-align: center; padding: 3.5rem 2rem; color: var(--muted); }
+    .empty-state .e-icon { font-size: 2.5rem; opacity: .35; display: block; margin-bottom: .8rem; }
+    .empty-state p { font-size: .87rem; line-height: 1.6; }
+    .empty-state a { color: var(--orange); font-weight: 600; text-decoration: none; }
+    .empty-state a:hover { text-decoration: underline; }
+
+    /* ══ NO RESULTS ══ */
+    .no-results { text-align: center; padding: 2.5rem; color: var(--muted); font-size: .84rem; display: none; }
+    .no-results .nr-icon { font-size: 1.8rem; opacity: .35; display: block; margin-bottom: .5rem; }
+
+    /* ══ TABLE FOOTER ══ */
+    .table-footer { padding: .6rem 1.2rem; background: var(--input-bg); border-top: 1px solid var(--border); font-size: .75rem; color: var(--muted); display: flex; align-items: center; gap: .5rem; }
+    .tf-count { font-weight: 700; color: var(--text); }
+
+    @media (max-width: 768px) { .sidebar { display: none; } .page { padding: 1rem .9rem 3rem; } .head-search input { width: 120px; } }
+    @media (max-width: 500px) { .topbar { padding: 0 1rem; } }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="sb-brand-name">Lumicolor</div>
+      <div class="sb-brand-sub">Calculadora SMV</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a class="nav-item" href="{{ url_for('index') }}">
+      <span class="nav-icon"><i class="fa-solid fa-calculator"></i></span>Calculadora
+    </a>
+    <a class="nav-item active" href="{{ url_for('history') }}">
+      <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>Historial
+    </a>
+    {% if current_user.is_admin %}
+    <div class="sb-divider"></div>
+    <a class="nav-item" href="{{ url_for('admin_users') }}">
+      <span class="nav-icon"><i class="fa-solid fa-users"></i></span>Usuarios
+    </a>
+    {% endif %}
+  </nav>
+  <div class="sb-footer">
+    <div class="avatar">{{ current_user.username[:2].upper() }}</div>
+    <div>
+      <div class="sb-user-name">{{ current_user.username }}</div>
+      <div class="sb-user-role">{{ 'Administrador' if current_user.is_admin else 'Usuario' }}</div>
+    </div>
+    <a class="sb-logout" href="{{ url_for('logout') }}" title="Cerrar sesión"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+  </div>
+</aside>
+
+<!-- ══ CONTENT ══ -->
+<div class="content">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem">
+      <i class="fa-solid fa-house" style="font-size:.72rem;color:var(--muted)"></i>
+      <a href="{{ url_for('index') }}" style="color:var(--muted);text-decoration:none">Calculadora</a>
+      <span style="color:var(--border)">/</span>
+      <span style="font-weight:600;color:var(--text)">Historial</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill"><span class="s-dot"></span>En línea</div>
+      <a href="{{ url_for('index') }}" class="t-btn" title="Nueva calculadora"><i class="fa-solid fa-plus"></i></a>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <h1 class="page-title">Historial de cálculos</h1>
+      <p class="page-sub">
+        {% if current_user.is_admin %}Todos los cálculos registrados en el sistema.
+        {% else %}Tus cálculos guardados.{% endif %}
+      </p>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert"><div><ul>{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul></div></div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-label"><span class="odot"></span>Cálculos guardados</div>
+        {% if calcs %}
+        <div class="head-search">
+          <span class="search-ico"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input type="text" id="search-input" placeholder="Buscar por nombre…" oninput="filterTable(this)" />
+          <button class="clear-search" id="clear-btn" onclick="clearSearch()" title="Limpiar">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        {% endif %}
+        <span class="ch-badge" id="count-badge">{{ calcs|length }} registro{{ 's' if calcs|length != 1 else '' }}</span>
+      </div>
+
+      {% if calcs %}
+      <div class="table-wrap">
+        <table id="hist-table">
+          <thead>
+            <tr>
+              <th style="width:36px">#</th>
+              <th onclick="sortTable(1)">Nombre <span class="sort-ico"><i class="fa-solid fa-sort"></i></span></th>
+              {% if current_user.is_admin %}<th>Usuario</th>{% endif %}
+              <th onclick="sortTable({{ 3 if current_user.is_admin else 2 }})">Fecha <span class="sort-ico"><i class="fa-solid fa-sort"></i></span></th>
+              <th>Total horas</th>
+              <th>Días est.</th>
+              <th style="width:100px"></th>
+            </tr>
+          </thead>
+          <tbody id="hist-body">
+            {% for c in calcs %}
+            {% set res = c.results_json | fromjson %}
+            <tr class="data-row" data-name="{{ c.name | lower }}">
+              <td style="color:var(--muted);font-size:.75rem;font-variant-numeric:tabular-nums">{{ loop.index }}</td>
+              <td><span class="calc-name">{{ c.name }}</span></td>
+              {% if current_user.is_admin %}
+              <td>
+                <span class="calc-user">
+                  <span style="width:20px;height:20px;border-radius:5px;background:var(--orange);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:white;flex-shrink:0">{{ c.user.username[:2].upper() }}</span>
+                  {{ c.user.username }}
+                </span>
+              </td>
+              {% endif %}
+              <td><span class="calc-date"><i class="fa-regular fa-calendar" style="margin-right:.3rem;opacity:.5"></i>{{ c.created_at.strftime('%d/%m/%Y %H:%M') }}</span></td>
+              <td><span class="val-pill">{{ "%.2f"|format(res.total_hours_with_cushion) }} h</span></td>
+              <td><span class="val-pill">{{ "%.2f"|format(res.days_with_cushion) }} días</span></td>
+              <td>
+                <div class="actions-cell">
+                  <a class="btn btn-view" href="{{ url_for('result', calc_id=c.id) }}">
+                    <i class="fa-solid fa-eye" style="font-size:.72rem"></i> Ver
+                  </a>
+                  {% if current_user.is_admin %}
+                  <form method="post" action="{{ url_for('delete_calc', calc_id=c.id) }}"
+                        onsubmit="return confirm('¿Eliminar este cálculo?')">
+                    <button type="submit" class="btn btn-del" title="Eliminar">
+                      <i class="fa-solid fa-trash" style="font-size:.72rem"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="no-results" id="no-results">
+        <span class="nr-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        No se encontraron cálculos que coincidan con la búsqueda.
+      </div>
+
+      <div class="table-footer">
+        Mostrando <span class="tf-count" id="visible-count">{{ calcs|length }}</span> de {{ calcs|length }} registro{{ 's' if calcs|length != 1 else '' }}
+      </div>
+
+      {% else %}
+      <div class="empty-state">
+        <span class="e-icon"><i class="fa-solid fa-inbox"></i></span>
+        <p>No hay cálculos guardados aún.<br>
+          <a href="{{ url_for('index') }}">Crear un nuevo cálculo &rarr;</a>
+        </p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  const totalRows = document.querySelectorAll('#hist-body .data-row').length;
+
+  function filterTable(input) {
+    const q = input.value.trim().toLowerCase();
+    const rows = document.querySelectorAll('#hist-body .data-row');
+    const clearBtn = document.getElementById('clear-btn');
+    clearBtn.style.display = q ? 'block' : 'none';
+    let visible = 0;
+    rows.forEach(row => {
+      const match = row.dataset.name.includes(q);
+      row.classList.toggle('hidden-row', !match);
+      if (match) visible++;
+    });
+    document.getElementById('visible-count').textContent = visible;
+    document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  function clearSearch() {
+    const inp = document.getElementById('search-input');
+    inp.value = '';
+    filterTable(inp);
+    inp.focus();
+  }
+
+  let sortDir = {};
+  function sortTable(colIdx) {
+    const tbody = document.getElementById('hist-body');
+    const rows  = Array.from(tbody.querySelectorAll('.data-row'));
+    const asc   = !sortDir[colIdx];
+    sortDir = {}; sortDir[colIdx] = asc;
+    document.querySelectorAll('th').forEach(th => th.classList.remove('sorted'));
+    document.querySelectorAll('th')[colIdx].classList.add('sorted');
+    rows.sort((a, b) => {
+      const av = a.cells[colIdx]?.textContent.trim().toLowerCase() || '';
+      const bv = b.cells[colIdx]?.textContent.trim().toLowerCase() || '';
+      return asc ? av.localeCompare(bv, 'es') : bv.localeCompare(av, 'es');
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  }
+</script>
+</body>
+</html>

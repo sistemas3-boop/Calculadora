@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tiempos estándar &ndash; Lumicolor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --sidebar:      #0f172a;
+      --sidebar-2:    #1e293b;
+      --orange:       #1565c0;
+      --orange-dk:    #0d47a1;
+      --orange-light: #eff6ff;
+      --orange-bg:    rgba(21,101,192,.13);
+      --green:        #10b981;
+      --green-dk:     #059669;
+      --green-light:  #ecfdf5;
+      --red:          #ef4444;
+      --red-dk:       #dc2626;
+      --bg:           #f1f5f9;
+      --card:         #ffffff;
+      --text:         #0f172a;
+      --muted:        #64748b;
+      --border:       #e2e8f0;
+      --input-bg:     #f8fafc;
+      --radius:       10px;
+      --radius-sm:    7px;
+      --shadow:       0 1px 3px rgba(0,0,0,.07);
+      --t:            .15s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "DM Sans", system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+    /* SIDEBAR */
+    .sidebar { width: 228px; flex-shrink: 0; background: var(--sidebar); height: 100vh; position: sticky; top: 0; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,.05); }
+    .sb-brand { padding: 1.1rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,.08); position: relative; display:flex; align-items:center; gap:.75rem; }
+    .sb-brand::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--orange); }
+    .sb-logo-icon { width:34px; height:34px; border-radius:8px; background:var(--orange); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 10px rgba(21,101,192,.45); }
+    .sb-logo-icon svg { width:18px; height:18px; fill:none; stroke:white; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .sb-brand-name { font-size: 1rem; font-weight: 700; color: #fff; letter-spacing:-.01em; }
+    .sb-brand-sub  { font-size: .67rem; color: rgba(255,255,255,.35); margin-top: .1rem; letter-spacing:.03em; text-transform:uppercase; }
+    .sb-divider    { height: 1px; background: rgba(255,255,255,.06); margin: .35rem .6rem; }
+    .sb-nav { padding: .3rem .6rem; flex: 1; display: flex; flex-direction: column; gap: .05rem; }
+    .nav-item { display: flex; align-items: center; gap: .6rem; padding: .52rem .75rem; border-radius: var(--radius-sm); color: rgba(255,255,255,.45); font-size: .82rem; font-weight: 500; text-decoration: none; transition: all var(--t); border-left: 3px solid transparent; }
+    .nav-item:hover { background: rgba(255,255,255,.05); color: rgba(255,255,255,.75); }
+    .nav-item.active { color: #fff; font-weight: 600; border-left-color: var(--orange); background: rgba(255,255,255,.06); }
+    .nav-icon { width: 16px; text-align: center; font-size: .9rem; }
+    .sb-footer { padding: .75rem 1rem; border-top: 1px solid rgba(255,255,255,.06); display: flex; align-items: center; gap: .6rem; }
+    .avatar { width: 30px; height: 30px; border-radius: 6px; flex-shrink: 0; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: .68rem; font-weight: 700; color: white; }
+    .sb-user-name { font-size: .77rem; font-weight: 600; color: rgba(255,255,255,.8); }
+    .sb-user-role { font-size: .63rem; color: rgba(255,255,255,.3); margin-top: .05rem; }
+    .sb-logout { margin-left: auto; font-size: .7rem; color: rgba(255,255,255,.3); text-decoration: none; padding: .2rem .4rem; border-radius: 4px; transition: all var(--t); }
+    .sb-logout:hover { color: var(--red); background: rgba(239,68,68,.12); }
+
+    /* CONTENT */
+    .content { flex: 1; min-width: 0; }
+    .page { padding: 1.75rem 2rem 4rem; }
+    .page-header { margin-bottom: 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .page-title { font-size: 1.55rem; font-weight: 800; letter-spacing: -.02em; text-transform: uppercase; }
+    .page-sub { font-size: .83rem; color: var(--muted); margin-top: .3rem; }
+
+    /* ALERT */
+    .alert { border-radius: var(--radius-sm); padding: .75rem 1rem; margin-bottom: 1.1rem; font-size: .84rem; display: flex; gap: .5rem; }
+    .alert-ok   { background: var(--green-light); border: 1px solid #a7f3d0; color: #065f46; }
+    .alert-warn { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; }
+    .alert ul { margin: .2rem 0 0; padding-left: 1.2rem; }
+
+    /* CARD */
+    .card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.25rem; }
+    .card-head { padding: .85rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .75rem; }
+    .ch-label { font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: .45rem; }
+    .ch-label .odot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--input-bg); }
+    th { padding: .55rem .85rem; text-align: left; font-size: .67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); border-bottom: 1px solid var(--border); }
+    td { padding: .45rem .85rem; font-size: .84rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--orange-light); }
+
+    .cod { font-family: monospace; font-size: .78rem; color: var(--muted); }
+    .time-input {
+      width: 90px; padding: .35rem .55rem;
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-size: .87rem; background: var(--input-bg); color: var(--text);
+      transition: border-color var(--t), box-shadow var(--t);
+      text-align: right;
+    }
+    .time-input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(21,101,192,.12); background: white; }
+
+    /* PROCESO SEPARATOR ROW */
+    .proceso-sep td {
+      padding: .4rem .85rem;
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted);
+      background: var(--input-bg);
+      border-top: 2px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .proceso-sep:first-child td { border-top: none; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: .35rem; padding: .52rem 1.1rem; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: .83rem; font-weight: 600; transition: all var(--t); text-decoration: none; white-space: nowrap; font-family: inherit; }
+    .btn-primary { background: var(--orange); color: white; box-shadow: 0 2px 8px rgba(21,101,192,.3); }
+    .btn-primary:hover { background: var(--orange-dk); }
+    .btn-success { background: var(--green); color: white; box-shadow: 0 2px 8px rgba(16,185,129,.3); }
+    .btn-success:hover { background: var(--green-dk); }
+    .btn-danger { background: transparent; color: var(--red); border: 1.5px solid rgba(239,68,68,.3); }
+    .btn-danger:hover { background: rgba(239,68,68,.08); border-color: var(--red); }
+    .btn-sm { padding: .28rem .6rem; font-size: .73rem; }
+
+    /* FIELD */
+    .field { display: flex; flex-direction: column; }
+    .field label { font-size: .74rem; font-weight: 600; color: var(--muted); margin-bottom: .3rem; letter-spacing: .02em; }
+    .field input, .field select {
+      padding: .48rem .72rem;
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-size: .85rem; background: var(--input-bg); color: var(--text);
+      transition: border-color var(--t), box-shadow var(--t);
+      font-family: inherit;
+    }
+    .field input:focus, .field select:focus {
+      outline: none; border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(21,101,192,.12); background: white;
+    }
+
+    /* SECTION TITLE */
+    .section-title { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 2rem 0 .85rem; display: flex; align-items: center; gap: .6rem; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ADD GRID */
+    .add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .add-body { padding: 1.2rem; display: flex; flex-direction: column; gap: .75rem; }
+    .add-grid-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+    .full-col { grid-column: 1 / -1; }
+
+    @media (max-width: 900px) { .add-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .sidebar { display: none; } .page { padding: 1rem .9rem 3rem; } .add-grid-fields { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="sb-brand-name">Lumicolor</div>
+      <div class="sb-brand-sub">Calculadora SMV</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a class="nav-item" href="{{ url_for('index') }}">
+      <span class="nav-icon"><i class="fa-solid fa-calculator"></i></span>Calculadora
+    </a>
+    <a class="nav-item" href="{{ url_for('history') }}">
+      <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>Historial
+    </a>
+    <div class="sb-divider"></div>
+    <a class="nav-item" href="{{ url_for('admin_users') }}">
+      <span class="nav-icon"><i class="fa-solid fa-users"></i></span>Usuarios
+    </a>
+    <a class="nav-item active" href="{{ url_for('admin_tiempos') }}">
+      <span class="nav-icon"><i class="fa-solid fa-stopwatch"></i></span>Tiempos estándar
+    </a>
+  </nav>
+  <div class="sb-footer">
+    <div class="avatar">{{ current_user.username[:2].upper() }}</div>
+    <div>
+      <div class="sb-user-name">{{ current_user.username }}</div>
+      <div class="sb-user-role">Administrador</div>
+    </div>
+    <a class="sb-logout" href="{{ url_for('logout') }}" title="Cerrar sesión"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+  </div>
+</aside>
+
+<!-- CONTENT -->
+<div class="content">
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Tiempos estándar</h1>
+        <p class="page-sub">Edita tiempos base (min) y gestiona zonas y procesos.</p>
+      </div>
+      <button type="submit" form="form-tiempos" class="btn btn-primary">
+        <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
+      </button>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-ok">
+          <i class="fa-solid fa-circle-check"></i>
+          <div><ul>{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul></div>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- ── TIEMPOS EXISTENTES ─────────────────────────────────── -->
+    <form id="form-tiempos" method="post" action="{{ url_for('admin_tiempos_editar') }}">
+
+      {% for categoria, subcats in times.items() %}
+      <div class="card">
+        <div class="card-head">
+          <div class="ch-label"><span class="odot"></span>{{ categoria }}</div>
+          <form method="post" action="{{ url_for('admin_tiempos_zona_eliminar') }}" style="margin-left:auto">
+            <input type="hidden" name="zona" value="{{ categoria }}">
+            <button type="submit" class="btn btn-danger btn-sm"
+              onclick="return confirm('¿Eliminar la zona {{ categoria }} y todos sus procesos? Esta acción no se puede deshacer.')">
+              <i class="fa-solid fa-trash"></i> Eliminar zona
+            </button>
+          </form>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Proceso</th>
+                <th>Medida</th>
+                <th>Tiempo (min)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for subcat, items in subcats.items() %}
+              <tr class="proceso-sep">
+                <td colspan="3">{{ subcat }}</td>
+                <td>
+                  <form method="post" action="{{ url_for('admin_tiempos_proceso_eliminar') }}" style="display:inline">
+                    <input type="hidden" name="zona" value="{{ categoria }}">
+                    <input type="hidden" name="proceso" value="{{ subcat }}">
+                    <button type="submit" class="btn btn-danger btn-sm"
+                      onclick="return confirm('¿Eliminar el proceso y todos sus tiempos?')">
+                      <i class="fa-solid fa-trash"></i> Eliminar
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% for cod, datos in items.items() %}
+              <tr>
+                <td class="cod">{{ cod }}</td>
+                <td>{{ subcat }}</td>
+                <td style="color:var(--muted);font-size:.8rem">{{ datos.desc }}</td>
+                <td>
+                  <input
+                    class="time-input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="{{ categoria }}|{{ subcat }}|{{ cod }}"
+                    value="{{ datos.tiempo }}"
+                    required
+                  />
+                </td>
+              </tr>
+              {% endfor %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endfor %}
+
+      <div style="text-align:right;margin-top:.5rem">
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
+        </button>
+      </div>
+
+    </form>
+
+    <!-- ── AGREGAR ZONA / PROCESO ─────────────────────────────── -->
+    <div class="section-title"><i class="fa-solid fa-plus"></i> Agregar nueva zona o proceso</div>
+
+    <div class="add-grid">
+
+      <!-- Nueva zona de trabajo -->
+      <div class="card">
+        <div class="card-head">
+          <div class="ch-label">
+            <span class="odot" style="background:var(--green)"></span>
+            Nueva zona de trabajo
+          </div>
+        </div>
+        <div class="add-body">
+          <p style="font-size:.8rem;color:var(--muted)">
+            Crea una nueva área de producción (CORTE, PINTURA, SOLDADURA, etc.).
+            Después podrás agregarle procesos.
+          </p>
+          <form method="post" action="{{ url_for('admin_tiempos_zona_agregar') }}" style="display:contents">
+            <div class="field">
+              <label>Nombre de la zona</label>
+              <input type="text" name="nombre_zona" placeholder="Ej: SOLDADURA" required>
+            </div>
+            <div>
+              <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-plus"></i> Agregar zona
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Nuevo proceso -->
+      <div class="card">
+        <div class="card-head">
+          <div class="ch-label">
+            <span class="odot" style="background:var(--green)"></span>
+            Nuevo proceso
+          </div>
+        </div>
+        <div class="add-body">
+          <p style="font-size:.8rem;color:var(--muted)">
+            Agrega un proceso a una zona existente con su primera entrada de tiempo.
+          </p>
+          <form method="post" action="{{ url_for('admin_tiempos_proceso_agregar') }}" style="display:contents">
+            <div class="add-grid-fields">
+              <div class="field full-col">
+                <label>Zona de trabajo</label>
+                <select name="zona" required>
+                  <option value="">Selecciona zona…</option>
+                  {% for zona_nombre in times.keys() %}
+                  <option value="{{ zona_nombre }}">{{ zona_nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field full-col">
+                <label>Nombre del proceso</label>
+                <input type="text" name="nombre_proceso" placeholder="Ej: Acrílico 5 mm" required>
+              </div>
+              <div class="field">
+                <label>Código inicial</label>
+                <input type="text" name="codigo" placeholder="Ej: CTE-N1" required>
+              </div>
+              <div class="field">
+                <label>Tiempo (min)</label>
+                <input type="number" name="tiempo" step="0.01" min="0" value="0" required>
+              </div>
+              <div class="field full-col">
+                <label>Descripción del grupo</label>
+                <input type="text" name="desc" placeholder="Ej: 25–30 cm">
+              </div>
+            </div>
+            <div>
+              <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-plus"></i> Agregar proceso
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div><!-- /.add-grid -->
+
+  </div><!-- /.page -->
+</div><!-- /.content -->
+
+</body>
+</html>

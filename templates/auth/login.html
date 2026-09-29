@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Iniciar sesión &ndash; Lumicolor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --blue:     #1565c0;
+      --blue-dk:  #0d47a1;
+      --blue-lt:  #eff6ff;
+      --dark:     #0f172a;
+      --dark2:    #1e293b;
+      --bg:       #f1f5f9;
+      --card:     #ffffff;
+      --border:   #e2e8f0;
+      --text:     #0f172a;
+      --muted:    #64748b;
+      --red:      #ef4444;
+      --radius:   12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+      min-height: 100vh; display: flex;
+    }
+
+    /* ══ SPLIT LAYOUT ══ */
+    .login-split {
+      display: flex; width: 100%; min-height: 100vh;
+    }
+
+    /* ── Left brand panel ── */
+    .login-left {
+      width: 45%; flex-shrink: 0;
+      background: var(--dark);
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem 3.5rem;
+      position: relative; overflow: hidden;
+    }
+    /* subtle geometric background */
+    .login-left::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 110% 0%, rgba(21,101,192,.25) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at -10% 100%, rgba(21,101,192,.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    /* grid dots */
+    .login-left::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    .ll-top { position: relative; z-index: 1; }
+    .ll-logo {
+      display: flex; align-items: center; gap: .85rem;
+      margin-bottom: 3.5rem;
+    }
+    .ll-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: var(--blue); display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(21,101,192,.5);
+      flex-shrink: 0;
+    }
+    .ll-icon svg { width: 24px; height: 24px; fill: white; }
+    .ll-brand-name { font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -.02em; }
+    .ll-brand-sub  { font-size: .72rem; color: rgba(255,255,255,.4); margin-top: .1rem; letter-spacing: .04em; text-transform: uppercase; }
+
+    .ll-headline { font-size: 2rem; font-weight: 800; color: #fff; letter-spacing: -.03em; line-height: 1.22; margin-bottom: 1rem; }
+    .ll-headline span { color: var(--blue); }
+    .ll-desc { font-size: .88rem; color: rgba(255,255,255,.5); line-height: 1.65; margin-bottom: 2.5rem; }
+
+    .ll-features { list-style: none; display: flex; flex-direction: column; gap: .85rem; }
+    .ll-features li {
+      display: flex; align-items: flex-start; gap: .75rem;
+      font-size: .84rem; color: rgba(255,255,255,.65); line-height: 1.4;
+    }
+    .ll-feat-icon {
+      width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+      background: rgba(21,101,192,.25); border: 1px solid rgba(21,101,192,.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; color: #93c5fd; margin-top: .08rem;
+    }
+
+    .ll-bottom { position: relative; z-index: 1; }
+    .ll-version { font-size: .7rem; color: rgba(255,255,255,.2); letter-spacing: .05em; }
+    .ll-divider { height: 1px; background: rgba(255,255,255,.07); margin-bottom: .75rem; }
+
+    /* ── Right form panel ── */
+    .login-right {
+      flex: 1; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+    .login-form-wrap { width: 100%; max-width: 400px; }
+
+    .form-eyebrow { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--blue); margin-bottom: .5rem; }
+    .form-title { font-size: 1.55rem; font-weight: 800; color: var(--text); letter-spacing: -.02em; margin-bottom: .4rem; }
+    .form-sub { font-size: .84rem; color: var(--muted); margin-bottom: 2rem; }
+
+    .alert {
+      background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px;
+      padding: .75rem 1rem; font-size: .84rem; color: #991b1b;
+      margin-bottom: 1.5rem; display: flex; gap: .5rem; align-items: flex-start;
+    }
+    .alert ul { margin: .2rem 0 0; padding-left: 1.2rem; }
+
+    .field { margin-bottom: 1.25rem; }
+    .field label {
+      display: block; font-size: .72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .07em;
+      color: var(--muted); margin-bottom: .4rem;
+    }
+    .input-wrap { position: relative; }
+    .field input {
+      width: 100%; padding: .72rem 1rem .72rem 2.6rem;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: .93rem; font-family: inherit;
+      background: var(--card); color: var(--text);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus {
+      outline: none; border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(21,101,192,.12); background: #fff;
+    }
+    .input-ico {
+      position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+      font-size: .85rem; color: var(--muted); pointer-events: none;
+    }
+    .pw-toggle {
+      position: absolute; right: .9rem; top: 50%; transform: translateY(-50%);
+      font-size: .85rem; color: var(--muted); cursor: pointer;
+      background: none; border: none; padding: .2rem; border-radius: 4px;
+      transition: color .15s;
+    }
+    .pw-toggle:hover { color: var(--text); }
+
+    .btn-login {
+      width: 100%; padding: .85rem;
+      background: var(--blue); color: white;
+      border: none; border-radius: 10px;
+      font-size: .95rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; letter-spacing: .03em;
+      transition: background .15s, box-shadow .15s, transform .1s;
+      box-shadow: 0 4px 18px rgba(21,101,192,.38);
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      margin-top: .5rem;
+    }
+    .btn-login:hover  { background: var(--blue-dk); box-shadow: 0 6px 24px rgba(21,101,192,.48); }
+    .btn-login:active { transform: scale(.98); }
+    .btn-login .spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .65s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .form-footer { text-align: center; font-size: .77rem; color: var(--muted); margin-top: 1.5rem; }
+
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 820px) {
+      .login-left { display: none; }
+      .login-right { background: var(--dark); }
+      .login-form-wrap { background: var(--card); padding: 2rem; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,.25); }
+    }
+    @media (max-width: 480px) {
+      .login-right { padding: 1rem; }
+      .login-form-wrap { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="login-split">
+
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="login-left">
+    <div class="ll-top">
+      <div class="ll-logo">
+        <div class="ll-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="ll-brand-name">Lumicolor</div>
+          <div class="ll-brand-sub">Calculadora SMV</div>
+        </div>
+      </div>
+
+      <h2 class="ll-headline">Control de <span>tiempos</span><br>de producción</h2>
+      <p class="ll-desc">Plataforma interna para el cálculo preciso de tiempos estándar por área productiva. Estimaciones rápidas y confiables.</p>
+
+      <ul class="ll-features">
+        <li>
+          <div class="ll-feat-icon"><i class="fa-solid fa-calculator"></i></div>
+          <span>Cálculo SMV por área: corte, canto, ensamble, pintura y más</span>
+        </li>
+        <li>
+          <div class="ll-feat-icon"><i class="fa-solid fa-eye"></i></div>
+          <span>Análisis de imagen con detección automática de medidas y piezas</span>
+        </li>
+        <li>
+          <div class="ll-feat-icon"><i class="fa-solid fa-chart-bar"></i></div>
+          <span>Historial completo de estimaciones con desglose por área</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="ll-bottom">
+      <div class="ll-divider"></div>
+      <div class="ll-version">Lumicolor &mdash; Acceso restringido &bull; v2.0</div>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT FORM PANEL ══ -->
+  <div class="login-right">
+    <div class="login-form-wrap">
+      <div class="form-eyebrow">Bienvenido</div>
+      <h1 class="form-title">Iniciar sesión</h1>
+      <p class="form-sub">Ingresa tus credenciales para acceder al sistema.</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert">
+            <i class="fa-solid fa-circle-exclamation" style="margin-top:.1rem;flex-shrink:0"></i>
+            <div><ul>{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul></div>
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" autocomplete="on" id="login-form">
+        <div class="field">
+          <label>Usuario</label>
+          <div class="input-wrap">
+            <span class="input-ico"><i class="fa-solid fa-user"></i></span>
+            <input type="text" name="username" placeholder="Ingresa tu usuario"
+                   autocomplete="username" required autofocus />
+          </div>
+        </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <div class="input-wrap">
+            <span class="input-ico"><i class="fa-solid fa-lock"></i></span>
+            <input type="password" name="password" id="pw-input" placeholder="••••••••"
+                   autocomplete="current-password" required />
+            <button type="button" class="pw-toggle" id="pw-toggle" title="Mostrar/ocultar contraseña">
+              <i class="fa-regular fa-eye" id="pw-ico"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-login" id="login-btn">
+          <span class="spinner" id="login-spin"></span>
+          <span id="login-lbl">Entrar</span>
+          <i class="fa-solid fa-arrow-right" id="login-arrow" style="font-size:.8rem"></i>
+        </button>
+      </form>
+
+      <div class="form-footer">&copy; {{ 2025 }} Lumicolor &mdash; Acceso restringido</div>
+    </div>
+  </div>
+
+</div>
+<script>
+  document.getElementById('pw-toggle').addEventListener('click', function() {
+    const inp = document.getElementById('pw-input');
+    const ico = document.getElementById('pw-ico');
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      ico.className = 'fa-regular fa-eye-slash';
+    } else {
+      inp.type = 'password';
+      ico.className = 'fa-regular fa-eye';
+    }
+  });
+
+  document.getElementById('login-form').addEventListener('submit', function() {
+    const btn = document.getElementById('login-btn');
+    const spin = document.getElementById('login-spin');
+    const lbl  = document.getElementById('login-lbl');
+    const arr  = document.getElementById('login-arrow');
+    spin.style.display = 'inline-block';
+    lbl.textContent = 'Entrando…';
+    arr.style.display = 'none';
+    btn.disabled = true;
+  });
+</script>
+</body>
+</html>
