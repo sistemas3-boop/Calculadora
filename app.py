@@ -950,12 +950,13 @@ def index():
         calc_name         = request.form.get("calc_name", "").strip() or "Cálculo sin nombre"
 
 
-        areas        = request.form.getlist("areas[]")
-        subprocesses = request.form.getlist("subprocesses[]")
-        groups       = request.form.getlist("groups[]")
-        quantities   = request.form.getlist("quantities[]")
-        widths       = request.form.getlist("widths[]")
-        heights      = request.form.getlist("heights[]")
+        areas         = request.form.getlist("areas[]")
+        subprocesses  = request.form.getlist("subprocesses[]")
+        groups        = request.form.getlist("groups[]")
+        quantities    = request.form.getlist("quantities[]")
+        widths        = request.form.getlist("widths[]")
+        heights       = request.form.getlist("heights[]")
+        heights_detail = request.form.getlist("heights_detail[]")
 
         if not areas:
             flash("Agrega al menos una área productiva.")
@@ -965,21 +966,54 @@ def index():
         errors: List[str] = []
 
         # Pad lists to match row count
-        widths  = widths  + [""] * max(0, len(areas) - len(widths))
-        heights = heights + [""] * max(0, len(areas) - len(heights))
+        widths         = widths         + [""] * max(0, len(areas) - len(widths))
+        heights        = heights        + [""] * max(0, len(areas) - len(heights))
+        heights_detail = heights_detail + [""] * max(0, len(areas) - len(heights_detail))
 
-        for i, (area, subprocess, group, qty_str, width_str, height_str) in enumerate(
-                zip(areas, subprocesses, groups, quantities, widths, heights)):
+        for i, (area, subprocess, group, qty_str, width_str, height_str, heights_detail_str) in enumerate(
+                zip(areas, subprocesses, groups, quantities, widths, heights, heights_detail)):
             if not area or not subprocess or not group:
                 errors.append(f"Fila {i + 1}: selecciona área, subproceso y grupo.")
                 continue
             try:
                 qty = float(qty_str) if qty_str else 1.0
+                # Medida real de cada letra (no el promedio/nominal del
+                # grupo): la regresión es lineal, así que sumar el tiempo de
+                # cada altura real da un total más ajustado que "un alto ×
+                # cantidad" cuando el grupo mezcla piezas de tamaño distinto
+                # (p.ej. el logo y las letras de un mismo set).
+                letter_heights: Optional[List[float]] = None
+                if group == "Regresión" and heights_detail_str:
+                    try:
+                        parsed = json.loads(heights_detail_str)
+                        if isinstance(parsed, list) and parsed:
+                            letter_heights = [float(h) for h in parsed]
+                    except (ValueError, TypeError):
+                        letter_heights = None
+
                 # Ensamble sin flange con ancho conocido: fórmula calibrada
                 if area == "ENSAMBLE" and subprocess == "Ensamble sin flange" and width_str:
                     ancho = float(width_str)
                     mins = (0.2545 + 0.01067 * ancho) * 60  # hrs → min
                     group = f"Formula({ancho:.1f}cm)"
+                    total_mins = mins * qty
+                elif letter_heights:
+                    reg = compute_regression(catalog, area, subprocess)
+                    if reg:
+                        slope, intercept = reg
+                        total_mins = sum(max(0.0, slope * h + intercept) for h in letter_heights)
+                        qty = float(len(letter_heights))
+                        mins = total_mins / qty
+                        group = f"Regresión letra por letra ({len(letter_heights)} piezas)"
+                    else:
+                        first = next(iter(catalog.get(area, {}).get(subprocess, {})), None)
+                        if first:
+                            mins = get_group_time(catalog, area, subprocess, first)
+                            group = first
+                            total_mins = mins * qty
+                        else:
+                            errors.append(f"Fila {i + 1}: sin datos de regresión para {area}.")
+                            continue
                 # Regresión lineal: medida fuera del rango conocido
                 elif group == "Regresión" and height_str:
                     h = float(height_str)
@@ -988,23 +1022,26 @@ def index():
                         slope, intercept = reg
                         mins = max(0.0, slope * h + intercept)
                         group = f"Regresión lineal ({h:.0f} cm)"
+                        total_mins = mins * qty
                     else:
                         first = next(iter(catalog.get(area, {}).get(subprocess, {})), None)
                         if first:
                             mins = get_group_time(catalog, area, subprocess, first)
                             group = first
+                            total_mins = mins * qty
                         else:
                             errors.append(f"Fila {i + 1}: sin datos de regresión para {area}.")
                             continue
                 else:
                     mins = get_group_time(catalog, area, subprocess, group)
+                    total_mins = mins * qty
                 rows.append({
                     "area": area,
                     "subprocess": subprocess,
                     "group": group,
                     "quantity": qty,
                     "mins_per_piece": round(mins, 2),
-                    "total_mins": round(mins * qty, 2),
+                    "total_mins": round(total_mins, 2),
                 })
             except ValueError as e:
                 errors.append(str(e))

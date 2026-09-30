@@ -1202,6 +1202,12 @@
   let detectedWidth2  = null;
   let detectedPieces2 = null;
   let image2Applied   = false;
+  // Alto real de cada letra individual (no el promedio/nominal del grupo):
+  // cuando está disponible, el tiempo se suma letra por letra en vez de
+  // "un alto × cantidad". Se invalida si el usuario edita Alto o Piezas a
+  // mano (ver los listeners de esos inputs).
+  let detectedLetterHeights  = null;
+  let detectedLetterHeights2 = null;
   const selectedItems = {};
   let reversoActive = false;
 
@@ -1376,24 +1382,46 @@
     return { mins: getEntryTime(best), group: best[0], height: null, width: null };
   }
 
+  // Alto real de cada letra en vez de un alto promedio/nominal por grupo:
+  // como getTimeForItem es lineal en Regresión, sumar el tiempo de cada
+  // altura real y promediarlo de vuelta a "por pieza" da un número más
+  // ajustado cuando el grupo mezcla piezas de tamaño distinto (p.ej. el
+  // logo y las letras de un mismo set).
+  function getTimeForItemLetters(area, sub, heightsList, widthCm) {
+    let total = 0;
+    for (const h of heightsList) total += getTimeForItem(area, sub, h, widthCm).mins;
+    return {
+      mins: total / heightsList.length,
+      group: `Regresión letra por letra (${heightsList.length})`,
+      height: null, width: widthCm,
+    };
+  }
+
   /* ══ BADGE UPDATE ══ */
   function updateAllBadges() {
     document.querySelectorAll('.sub-item').forEach(item => {
       const area  = item.dataset.area;
       const sub   = item.dataset.sub;
       const badge = item.querySelector('.sub-time-badge');
-      const res   = getTimeForItem(area, sub, detectedHeight, detectedWidth);
+      const useLetters = detectedLetterHeights && detectedLetterHeights.length > 0;
+      const res = useLetters
+        ? getTimeForItemLetters(area, sub, detectedLetterHeights, detectedWidth)
+        : getTimeForItem(area, sub, detectedHeight, detectedWidth);
       const effectiveMins = (area === 'CORTE' && reversoActive) ? res.mins * 2 : res.mins;
       const key = area + '::' + sub;
-      let badgeText = Math.round(effectiveMins) + ' min' + (res.group === 'Regresión' ? ' ~' : '');
+      let badgeText = Math.round(effectiveMins) + ' min' + (res.group.startsWith('Regresión') ? ' ~' : '');
       if (selectedItems[key]) {
         selectedItems[key].group  = res.group;
         selectedItems[key].mins   = res.mins;
         selectedItems[key].width  = res.width;
         selectedItems[key].height = res.height;
+        selectedItems[key].heightsDetail = useLetters ? detectedLetterHeights : null;
       }
       if (image2Applied) {
-        const res2 = getTimeForItem(area, sub, detectedHeight2, detectedWidth2);
+        const useLetters2 = detectedLetterHeights2 && detectedLetterHeights2.length > 0;
+        const res2 = useLetters2
+          ? getTimeForItemLetters(area, sub, detectedLetterHeights2, detectedWidth2)
+          : getTimeForItem(area, sub, detectedHeight2, detectedWidth2);
         const effectiveMins2 = (area === 'CORTE' && reversoActive) ? res2.mins * 2 : res2.mins;
         badgeText += ' + ' + Math.round(effectiveMins2) + ' min (img2)';
         if (selectedItems[key]) {
@@ -1401,6 +1429,7 @@
           selectedItems[key].mins2   = res2.mins;
           selectedItems[key].width2  = res2.width;
           selectedItems[key].height2 = res2.height;
+          selectedItems[key].heightsDetail2 = useLetters2 ? detectedLetterHeights2 : null;
         }
       }
       if (badge) badge.textContent = badgeText;
@@ -1561,13 +1590,21 @@
         });
       }
       item.classList.add('checked');
-      const res  = getTimeForItem(area, sub, detectedHeight, detectedWidth);
+      const useLetters  = detectedLetterHeights  && detectedLetterHeights.length  > 0;
+      const useLetters2 = detectedLetterHeights2 && detectedLetterHeights2.length > 0;
+      const res  = useLetters
+        ? getTimeForItemLetters(area, sub, detectedLetterHeights, detectedWidth)
+        : getTimeForItem(area, sub, detectedHeight, detectedWidth);
       const qty  = detectedPieces || 1;
-      const res2 = getTimeForItem(area, sub, detectedHeight2, detectedWidth2);
+      const res2 = useLetters2
+        ? getTimeForItemLetters(area, sub, detectedLetterHeights2, detectedWidth2)
+        : getTimeForItem(area, sub, detectedHeight2, detectedWidth2);
       const qty2 = detectedPieces2 || 1;
       selectedItems[key] = {
         area, sub, group: res.group, qty, mins: res.mins, width: res.width, height: res.height,
+        heightsDetail: useLetters ? detectedLetterHeights : null,
         group2: res2.group, qty2, mins2: res2.mins, width2: res2.width, height2: res2.height,
+        heightsDetail2: useLetters2 ? detectedLetterHeights2 : null,
       };
       const qtyInput = item.querySelector('.sub-qty');
       if (qtyInput) qtyInput.value = qty;
@@ -1620,6 +1657,14 @@
     body.innerHTML = html;
     wrap.style.display = '';
   }
+
+  // Si el usuario edita Alto o Piezas a mano, esa fila deja de sumarse
+  // letra por letra (el detalle real ya no corresponde al valor escrito) y
+  // vuelve al modo de siempre: un alto × cantidad.
+  document.getElementById('val-height-1').addEventListener('input', () => { detectedLetterHeights  = null; });
+  document.getElementById('val-pieces-1').addEventListener('input', () => { detectedLetterHeights  = null; });
+  document.getElementById('val-height-2').addEventListener('input', () => { detectedLetterHeights2 = null; });
+  document.getElementById('val-pieces-2').addEventListener('input', () => { detectedLetterHeights2 = null; });
 
   /* ══ APPLY ANALYSIS ══ */
   function applyAnalysis(idx) {
@@ -1706,6 +1751,8 @@
     document.getElementById('analysis-panel-' + idx).style.display = 'none';
     document.getElementById('analysis-panel-2').style.display = 'none';
     document.getElementById('analyze-ok-' + idx).style.display = 'none';
+    detectedLetterHeights = null;
+    detectedLetterHeights2 = null;
     analyzeBtn.style.display = 'inline-flex';
     analyzeBtn.className = 'btn btn-dark';
     analyzeBtn.disabled = false;
@@ -1773,6 +1820,11 @@
         const groups = data.letter_groups || [];
         const g0 = groups[0] || null;
         const twoGroups = groups.length >= 2;
+        // Alto real de cada letra (no el promedio/nominal del grupo): si
+        // hay al menos 2 piezas con medida propia, se usa para sumar el
+        // tiempo letra por letra en vez de "un alto × cantidad".
+        detectedLetterHeights = (g0 && g0.pieces && g0.pieces.length > 1)
+          ? g0.pieces.map(p => p.height_cm) : null;
         const heightCm = g0 ? g0.height_cm : data.height_cm;
         const piecesN  = g0 ? g0.letters    : data.pieces;
         // Con grupos de letras, el ancho de cada uno sale de sus propios
@@ -1807,6 +1859,8 @@
 
         if (twoGroups) {
           const g1 = groups[1];
+          detectedLetterHeights2 = (g1.pieces && g1.pieces.length > 1)
+            ? g1.pieces.map(p => p.height_cm) : null;
           document.getElementById('ap-title-2').textContent = 'Grupo 2 · letras chicas';
           document.getElementById('val-height-2').value = g1.height_cm;
           document.getElementById('val-width-2').value  = g1.width_cm != null ? g1.width_cm : '';
@@ -1817,6 +1871,7 @@
           applyAnalysis(2);
           toast(`2 tamaños de letra detectados en el archivo: ${g0.letters} de ${g0.height_cm} cm y ${g1.letters} de ${g1.height_cm} cm.`, 'success', 5000);
         } else {
+          detectedLetterHeights2 = null;
           document.getElementById('analysis-panel-2').style.display = 'none';
         }
       } catch (err) {
@@ -1860,6 +1915,7 @@
       add('quantities[]',   it.qty);
       add('widths[]',       it.width  != null ? it.width  : '');
       add('heights[]',      it.height != null ? it.height : '');
+      add('heights_detail[]', it.heightsDetail ? JSON.stringify(it.heightsDetail) : '');
       if (image2Applied) {
         add('areas[]',        it.area);
         add('subprocesses[]', it.sub);
@@ -1867,6 +1923,7 @@
         add('quantities[]',   it.qty2);
         add('widths[]',       it.width2  != null ? it.width2  : '');
         add('heights[]',      it.height2 != null ? it.height2 : '');
+        add('heights_detail[]', it.heightsDetail2 ? JSON.stringify(it.heightsDetail2) : '');
       }
     });
     document.getElementById('submit-spin').style.display = 'inline-block';
