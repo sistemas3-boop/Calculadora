@@ -491,6 +491,12 @@
     <div class="actions">
       <a href="{{ url_for('index') }}" class="btn btn-primary">← Calcular otro anuncio</a>
       <button type="button" class="btn btn-outline" onclick="window.print()">Imprimir</button>
+      {% if calc.nesting_pdf_url %}
+      <a href="{{ calc.nesting_pdf_url }}" class="btn btn-outline" target="_blank" rel="noopener"
+         style="border-color:rgba(21,101,192,.35);color:var(--orange-dk);background:var(--orange-light)">
+        <i class="fa-solid fa-file-pdf"></i>&nbsp; Plano de corte (nesting) PDF
+      </a>
+      {% endif %}
     </div>
 
   </div><!-- /page -->

@@ -4,6 +4,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import time
 
 try:
     from dotenv import load_dotenv
@@ -36,6 +37,8 @@ try:
     PYMUPDF_AVAILABLE = True
 except ImportError:
     PYMUPDF_AVAILABLE = False
+
+import nesting
 
 # LibreOffice (con el filtro libcdr) es lo que convierte .cdr -> PDF en modo
 # headless dentro del contenedor Docker. No hay binding Python confiable
@@ -90,14 +93,15 @@ class User(UserMixin, db.Model):
 
 class Calculation(db.Model):
     __tablename__ = "lc_calculation"
-    id           = db.Column(db.Integer, primary_key=True)
-    user_id      = db.Column(db.Integer, db.ForeignKey("lc_user.id"), nullable=False)
-    name         = db.Column(db.String(120), nullable=False, default="Sin nombre")
-    created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    rows_json    = db.Column(db.Text, nullable=False)
-    params_json  = db.Column(db.Text, nullable=False)
-    results_json = db.Column(db.Text, nullable=False)
-    image_url    = db.Column(db.String(512), nullable=True)
+    id              = db.Column(db.Integer, primary_key=True)
+    user_id         = db.Column(db.Integer, db.ForeignKey("lc_user.id"), nullable=False)
+    name            = db.Column(db.String(120), nullable=False, default="Sin nombre")
+    created_at      = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    rows_json       = db.Column(db.Text, nullable=False)
+    params_json     = db.Column(db.Text, nullable=False)
+    results_json    = db.Column(db.Text, nullable=False)
+    image_url       = db.Column(db.String(512), nullable=True)
+    nesting_pdf_url = db.Column(db.String(512), nullable=True)
 
 
 @login_manager.user_loader
@@ -686,6 +690,43 @@ def _convert_cdr_to_pdf(cdr_path: str, out_dir: str) -> str:
     return pdf_path
 
 
+def _build_nesting_pdf(cdr_filename: str, letter_heights_by_material: Dict[str, List[List[float]]]) -> Optional[str]:
+    """Genera el plano de corte (nesting real, 6 mm de separación) para
+    cada material presente en `letter_heights_by_material` (clave = label
+    del material, ver nesting.MATERIAL_SHEETS), cada uno sobre el tamaño de
+    hoja que le corresponde — no se pueden mezclar letras de materiales
+    distintos en la misma hoja. Junta todos los grupos de letras que
+    coinciden con cada lista (p.ej. Grupo 1 y Grupo 2 del mismo archivo, si
+    ambos se mandan a cortar del mismo material), a partir del .cdr ya
+    guardado en uploads/ al analizarlo. Devuelve la URL pública del PDF
+    combinado, o None si no se pudo generar nada.
+    """
+    cdr_path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(cdr_filename))
+    if not os.path.exists(cdr_path):
+        return None
+    pdf_path = _convert_cdr_to_pdf(cdr_path, app.config["UPLOAD_FOLDER"])
+    base = os.path.splitext(os.path.basename(cdr_path))[0]
+    out_name = f"nesting_{base}_{int(time.time())}.pdf"
+    out_path = os.path.join(app.config["UPLOAD_FOLDER"], out_name)
+
+    material_jobs = []
+    for material_label, letter_heights_lists in letter_heights_by_material.items():
+        sheet_w_mm, sheet_h_mm = next(
+            (w, h) for _, label, w, h in nesting.MATERIAL_SHEETS if label == material_label
+        )
+        material_jobs.append({
+            "material_label": material_label,
+            "sheet_w_mm": sheet_w_mm,
+            "sheet_h_mm": sheet_h_mm,
+            "letter_heights_lists": letter_heights_lists,
+        })
+
+    result_path = nesting.build_nesting_pdf_multi_material(pdf_path, material_jobs, out_path)
+    if not result_path:
+        return None
+    return url_for("uploaded_file", filename=out_name)
+
+
 def analyze_cdr_file(cdr_path: str) -> Dict[str, Any]:
     """Analiza un archivo .cdr (CorelDRAW).
 
@@ -964,6 +1005,13 @@ def index():
 
         rows: List[Dict] = []
         errors: List[str] = []
+        # Medidas reales de letra de cada fila de CORTE cuyo material tenga
+        # una hoja conocida (Acrílico blanco, Lámina cal. 19, Trovicel —
+        # ver nesting.MATERIAL_SHEETS) y traiga alturas individuales del
+        # .cdr. Puede haber más de una fila por material (p.ej. Grupo 1 y
+        # Grupo 2 del mismo archivo si ambos se mandan a cortar) — todas
+        # las del mismo material se juntan en su propio plano más abajo.
+        nesting_letter_heights_by_material: Dict[str, List[List[float]]] = {}
 
         # Pad lists to match row count
         widths         = widths         + [""] * max(0, len(areas) - len(widths))
@@ -1043,6 +1091,11 @@ def index():
                     "mins_per_piece": round(mins, 2),
                     "total_mins": round(total_mins, 2),
                 })
+                if area == "CORTE" and letter_heights:
+                    material = nesting.material_for_subprocess(subprocess)
+                    if material:
+                        material_label = material[0]
+                        nesting_letter_heights_by_material.setdefault(material_label, []).append(letter_heights)
             except ValueError as e:
                 errors.append(str(e))
 
@@ -1070,6 +1123,14 @@ def index():
             "days_with_cushion":        total_hours_with_cushion / hours_per_day,
         }
 
+        nesting_pdf_url = None
+        cdr_filename = request.form.get("cdr_filename", "").strip()
+        if nesting_letter_heights_by_material and cdr_filename and LIBREOFFICE_AVAILABLE and PYMUPDF_AVAILABLE:
+            try:
+                nesting_pdf_url = _build_nesting_pdf(cdr_filename, nesting_letter_heights_by_material)
+            except Exception:
+                nesting_pdf_url = None  # el cálculo no debe fallar por esto
+
         calc = Calculation(
             user_id=current_user.id,
             name=calc_name,
@@ -1077,6 +1138,7 @@ def index():
             params_json=json.dumps(params),
             results_json=json.dumps(results),
             image_url=request.form.get("image_url") or None,
+            nesting_pdf_url=nesting_pdf_url,
         )
         db.session.add(calc)
         db.session.commit()
@@ -1293,6 +1355,9 @@ with app.app_context():
         cols = [r[1] for r in _conn.execute(db.text("PRAGMA table_info(lc_calculation)")).fetchall()]
         if "image_url" not in cols:
             _conn.execute(db.text("ALTER TABLE lc_calculation ADD COLUMN image_url VARCHAR(512)"))
+            _conn.commit()
+        if "nesting_pdf_url" not in cols:
+            _conn.execute(db.text("ALTER TABLE lc_calculation ADD COLUMN nesting_pdf_url VARCHAR(512)"))
             _conn.commit()
     if not User.query.first():
         admin = User(

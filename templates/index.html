@@ -6,7 +6,7 @@
   <title>Calculadora SMV – Lumicolor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
@@ -36,11 +36,10 @@
       --radius-xs:    5px;
       --shadow-xs:    0 1px 2px rgba(0,0,0,.05);
       --shadow-sm:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
-      --shadow:       0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
-      --shadow-md:    0 8px 24px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
-      --shadow-lg:    0 16px 48px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.07);
+      --shadow:       0 2px 8px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:    0 4px 14px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
+      --shadow-lg:    0 8px 28px rgba(0,0,0,.14), 0 2px 8px rgba(0,0,0,.06);
       --t:            .15s ease;
-      --t2:           .22s cubic-bezier(.34,1.56,.64,1);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -85,28 +84,21 @@
     }
     .sb-brand {
       padding: 1.25rem 1.1rem 1.1rem;
-      background: linear-gradient(145deg, var(--sidebar-2) 0%, var(--sidebar-3) 100%);
+      background: var(--sidebar-2);
       border-bottom: 1px solid rgba(255,255,255,.07);
       position: relative;
       display: flex; align-items: center; gap: .85rem;
-    }
-    .sb-brand::after {
-      content: '';
-      position: absolute; bottom: 0; left: 1.1rem; right: 1.1rem;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
     }
     .sb-logo-wrap {
       position: relative; flex-shrink: 0;
     }
     .sb-logo-icon {
       width: 36px; height: 36px; border-radius: 9px;
-      background: linear-gradient(135deg, var(--brand-lt) 0%, var(--brand-dk) 100%);
+      background: var(--brand);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 14px rgba(21,101,192,.55), 0 0 0 1px rgba(255,255,255,.1);
     }
     .sb-logo-icon svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .sb-brand-name { font-size: .95rem; font-weight: 800; color: #fff; letter-spacing: -.01em; font-family: "Plus Jakarta Sans", sans-serif; }
+    .sb-brand-name { font-size: .95rem; font-weight: 700; color: #fff; letter-spacing: -.01em; }
     .sb-brand-sub  { font-size: .62rem; color: rgba(255,255,255,.35); margin-top: .1rem; letter-spacing: .06em; text-transform: uppercase; }
     .sb-section { font-size: .62rem; font-weight: 700; color: rgba(255,255,255,.2); padding: 1rem .85rem .3rem; letter-spacing: .1em; text-transform: uppercase; }
     .sb-divider { height: 1px; background: rgba(255,255,255,.05); margin: .4rem .7rem; }
@@ -134,10 +126,9 @@
     }
     .avatar {
       width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
-      background: linear-gradient(135deg, var(--brand-lt), var(--brand-dk));
+      background: var(--brand);
       display: flex; align-items: center; justify-content: center;
       font-size: .7rem; font-weight: 700; color: white;
-      box-shadow: 0 2px 8px rgba(21,101,192,.4);
     }
     .sb-user-name { font-size: .78rem; font-weight: 600; color: rgba(255,255,255,.85); }
     .sb-user-role { font-size: .62rem; color: rgba(255,255,255,.3); margin-top: .05rem; }
@@ -270,41 +261,29 @@
 
     /* ══ HERO BANNER ══ */
     .page-hero {
-      background: linear-gradient(135deg, var(--sidebar) 0%, var(--sidebar-2) 60%, var(--sidebar-3) 100%);
-      padding: 1.75rem 2rem 1.5rem;
-      position: relative; overflow: hidden;
-    }
-    .page-hero::before {
-      content: '';
-      position: absolute; top: -40%; right: -5%;
-      width: 320px; height: 320px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(21,101,192,.35) 0%, transparent 65%);
-      pointer-events: none;
-    }
-    .page-hero::after {
-      content: '';
-      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
+      background: var(--sidebar);
+      padding: 1.4rem 2rem 1.25rem;
+      position: relative;
+      border-bottom: 1px solid rgba(255,255,255,.06);
     }
     .hero-inner { position: relative; z-index: 1; }
     .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: .4rem;
+      display: flex; align-items: center; gap: .4rem;
       font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
-      color: rgba(255,255,255,.45); margin-bottom: .55rem;
+      color: rgba(255,255,255,.4); margin-bottom: .4rem;
     }
     .hero-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--brand-lt); flex-shrink: 0; }
     .hero-title {
-      font-size: 1.7rem; font-weight: 900; color: #fff;
-      letter-spacing: -.025em; line-height: 1.15;
-      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.4rem; font-weight: 700; color: #fff;
+      letter-spacing: -.01em; line-height: 1.2;
     }
     .hero-title span { color: var(--brand-lt); }
-    .hero-sub { font-size: .82rem; color: rgba(255,255,255,.45); margin-top: .5rem; }
+    .hero-sub { font-size: .8rem; color: rgba(255,255,255,.45); margin-top: .35rem; }
     .hero-stats {
-      display: flex; gap: 1.5rem; margin-top: 1.25rem; flex-wrap: wrap;
+      display: flex; gap: 1.5rem; margin-top: 1.1rem; flex-wrap: wrap;
     }
     .hs-item { display: flex; flex-direction: column; gap: .1rem; }
-    .hs-val { font-size: 1.15rem; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; font-family: "Plus Jakarta Sans", sans-serif; }
+    .hs-val { font-size: 1.05rem; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
     .hs-lbl { font-size: .63rem; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: .08em; }
     .hs-div { width: 1px; background: rgba(255,255,255,.08); align-self: stretch; }
 
@@ -316,17 +295,15 @@
       background: var(--card);
       border-radius: var(--radius);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-xs);
       margin-bottom: 1.25rem;
       overflow: hidden;
-      transition: box-shadow var(--t);
     }
-    .card:hover { box-shadow: var(--shadow); }
     .card-head {
       padding: .9rem 1.3rem;
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; gap: .75rem;
-      background: linear-gradient(180deg, var(--card) 0%, var(--input-bg) 100%);
+      background: var(--input-bg);
     }
     .ch-icon {
       width: 30px; height: 30px; border-radius: var(--radius-xs);
@@ -362,7 +339,6 @@
     }
     .upload-zone:hover, .upload-zone.drag-over {
       border-color: var(--brand); background: var(--brand-faint);
-      box-shadow: 0 0 0 4px rgba(21,101,192,.08);
     }
     .upload-zone.has-file {
       border-style: solid; border-color: var(--green); background: var(--green-lt);
@@ -370,15 +346,14 @@
     .upload-zone.analyzing {
       border-color: var(--brand); background: var(--brand-faint); pointer-events: none;
     }
-    .upload-zone .u-icon { font-size: 2.5rem; display: block; margin-bottom: .65rem; transition: transform .3s; }
-    .upload-zone:hover .u-icon { transform: scale(1.12) translateY(-3px); }
+    .upload-zone .u-icon { font-size: 2.2rem; display: block; margin-bottom: .65rem; }
     .upload-zone h3 { font-size: .9rem; font-weight: 700; color: var(--text); }
     .upload-zone p  { font-size: .77rem; color: var(--muted); margin-top: .25rem; }
     .uz-status { font-size: .77rem; font-weight: 600; margin-top: .45rem; }
     .uz-status.green  { color: var(--green-dk); }
     .uz-status.orange { color: var(--brand); }
     .uz-pbar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--border); display: none; }
-    .uz-pbar { height: 100%; background: linear-gradient(90deg, var(--brand), #42a5f5); width: 0%; border-radius: 0; transition: width .15s; }
+    .uz-pbar { height: 100%; background: var(--brand); width: 0%; border-radius: 0; transition: width .15s; }
 
     .preview-row { display: flex; gap: 1.25rem; margin-top: 1.25rem; flex-wrap: wrap; }
     .preview-box { display: flex; flex-direction: column; gap: .35rem; }
@@ -404,9 +379,9 @@
     .sub-qty2-wrap .q2-tag { font-size: .6rem; font-weight: 800; color: var(--green-dk); background: var(--green-lt); border: 1px solid #a7f3d0; border-radius: 5px; padding: .05rem .3rem; }
 
     /* ══ ANALYSIS PANEL ══ */
-    .analysis-panel { margin-top: 1.25rem; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); animation: fadeUp .3s ease; box-shadow: var(--shadow-sm); }
+    .analysis-panel { margin-top: 1.25rem; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); animation: fadeUp .3s ease; box-shadow: var(--shadow-xs); }
     .ap-head {
-      background: linear-gradient(135deg, var(--sidebar) 0%, var(--sidebar-2) 100%);
+      background: var(--sidebar);
       padding: .65rem 1.1rem; font-size: .7rem; font-weight: 700;
       letter-spacing: .1em; color: rgba(255,255,255,.8); text-transform: uppercase;
       display: flex; align-items: center; gap: .5rem;
@@ -421,14 +396,14 @@
     .analysis-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: .75rem; }
     .abox {
       background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: .85rem .9rem; text-align: center; box-shadow: var(--shadow-xs);
+      padding: .85rem .9rem; text-align: center;
       position: relative; overflow: hidden;
     }
     .abox::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--brand), #42a5f5);
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--brand);
     }
-    .abox.green::before { background: linear-gradient(90deg, var(--green), #34d399); }
+    .abox.green::before { background: var(--green); }
     .abox .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .5rem; }
     .abox .edit-input {
       width: 100%; padding: .28rem .5rem; font-size: 1.05rem; font-weight: 800;
@@ -453,15 +428,11 @@
       transition: all var(--t); text-decoration: none; white-space: nowrap;
       font-family: inherit;
     }
-    .btn:active:not(:disabled) { transform: scale(.97); }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--brand-lt) 0%, var(--brand-dk) 100%);
-      color: white; box-shadow: 0 2px 10px rgba(21,101,192,.35);
-    }
-    .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(21,101,192,.45); transform: translateY(-1px); }
-    .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 2px 10px rgba(5,150,105,.3); }
-    .btn-success:hover:not(:disabled) { box-shadow: 0 5px 18px rgba(5,150,105,.4); transform: translateY(-1px); }
+    .btn-primary { background: var(--brand); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--brand-dk); }
+    .btn-success { background: var(--green); color: white; }
+    .btn-success:hover:not(:disabled) { background: var(--green-dk); }
     .btn-dark { background: var(--sidebar); color: white; }
     .btn-dark:hover:not(:disabled) { background: var(--sidebar-2); }
     .btn-outline { background: var(--card); color: var(--text-2); border: 1.5px solid var(--border); }
@@ -469,14 +440,12 @@
     .btn-ghost-red { background: #fff1f2; color: var(--red); border: 1px solid #fecdd3; padding: .3rem .65rem; font-size: .77rem; }
     .btn-ghost-red:hover:not(:disabled) { background: #fee2e2; }
     .btn-submit {
-      width: 100%; padding: .95rem; font-size: .95rem; justify-content: center;
-      border-radius: var(--radius); letter-spacing: .04em; text-transform: uppercase;
-      font-weight: 800; transition: all .2s;
-      background: linear-gradient(135deg, var(--brand-lt) 0%, var(--brand-dk) 100%);
-      box-shadow: 0 6px 22px rgba(21,101,192,.38);
-      font-family: "Plus Jakarta Sans", sans-serif;
+      width: 100%; padding: .85rem; font-size: .9rem; justify-content: center;
+      border-radius: var(--radius-sm); letter-spacing: .02em;
+      font-weight: 700;
+      background: var(--brand);
     }
-    .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(21,101,192,.48); }
+    .btn-submit:hover:not(:disabled) { background: var(--brand-dk); }
 
     /* ══ SPINNER ══ */
     .spinner { display: none; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: white; border-radius: 50%; animation: spin .65s linear infinite; flex-shrink: 0; }
@@ -493,24 +462,25 @@
     .area-card {
       border-radius: var(--radius); border: 1px solid var(--border);
       overflow: hidden; background: var(--card);
-      box-shadow: var(--shadow-sm);
-      transition: all .2s; position: relative;
+      position: relative;
     }
-    .area-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
     .area-card-accent {
-      position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+      position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: var(--border-2);
     }
     .area-card-head {
-      padding: .75rem 1rem .7rem 1.2rem;
+      padding: .7rem 1rem .65rem 1.1rem;
       display: flex; align-items: center; gap: .6rem;
       border-bottom: 1px solid var(--border);
+      background: var(--input-bg);
     }
     .area-icon-wrap {
-      width: 30px; height: 30px; border-radius: 7px;
+      width: 26px; height: 26px; border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; flex-shrink: 0;
+      font-size: .8rem; flex-shrink: 0;
+      background: var(--card); border: 1px solid var(--border-2); color: var(--text-2);
     }
-    .area-title { font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; flex: 1; }
+    .area-title { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; flex: 1; color: var(--text-2); }
     .area-count { font-size: .6rem; font-weight: 700; color: var(--muted); background: var(--input-bg); border: 1px solid var(--border); padding: .1rem .4rem; border-radius: 99px; flex-shrink: 0; }
     .area-card-body { padding: .5rem .6rem .65rem 1.1rem; display: flex; flex-direction: column; gap: .12rem; }
     .sub-item {
@@ -613,14 +583,10 @@
     .sticky-bar {
       position: fixed; bottom: 0; left: 234px; right: 0; z-index: 20;
       background: var(--sidebar);
-      border-top: 1px solid rgba(255,255,255,.07);
+      border-top: 2px solid var(--brand);
       padding: .65rem 2rem; display: flex; align-items: center; gap: 1.5rem;
-      transform: translateY(100%); transition: transform .22s cubic-bezier(.4,0,.2,1);
-      box-shadow: 0 -8px 32px rgba(0,0,0,.3);
-    }
-    .sticky-bar::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--brand-dk), var(--brand-lt), var(--brand-dk));
+      transform: translateY(100%); transition: transform .18s ease;
+      box-shadow: var(--shadow-lg);
     }
     .sticky-bar.show { transform: translateY(0); }
     .sb-item { display: flex; flex-direction: column; gap: .06rem; }
@@ -630,13 +596,13 @@
     .sb-div { width: 1px; height: 28px; background: rgba(255,255,255,.08); }
     .sb-space { flex: 1; }
     .sb-submit-btn {
-      background: linear-gradient(135deg, var(--brand-lt), var(--brand-dk));
+      background: var(--brand);
       color: white; border: none; border-radius: var(--radius-sm);
       padding: .5rem 1.4rem; font-size: .82rem; font-weight: 700;
-      cursor: pointer; transition: all var(--t); font-family: inherit;
-      box-shadow: 0 4px 14px rgba(21,101,192,.45);
+      cursor: pointer; transition: background var(--t); font-family: inherit;
     }
-    .sb-submit-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(21,101,192,.55); }
+    .sb-submit-btn:hover:not(:disabled) { background: var(--brand-dk); }
+    .sb-submit-btn:disabled { opacity: .5; cursor: not-allowed; }
 
     /* ══ MISC ══ */
     .tag { display: inline-block; font-size: .67rem; font-weight: 700; padding: .1rem .48rem; border-radius: 99px; }
@@ -729,7 +695,7 @@
     <span class="sb-val sb-accent" id="sb-days">— días</span>
   </div>
   <div class="sb-space"></div>
-  <button type="submit" form="calc-form" class="sb-submit-btn">
+  <button type="submit" form="calc-form" class="sb-submit-btn" id="sticky-submit-btn" disabled>
     Calcular &nbsp;&rarr;
   </button>
 </div>
@@ -860,14 +826,16 @@
       <div class="card-body">
         <p class="hint">
           <i class="fa-solid fa-lightbulb" style="color:var(--brand);flex-shrink:0;margin-top:.1rem"></i>
+          <span>
           Sube el archivo <strong>.cdr (CorelDRAW)</strong> del diseño. El sistema toma las <strong>medidas exactas</strong> (Alto × Ancho en cm) del texto "Medidas" de la hoja (verificadas contra las cotas del dibujo) y cuenta las <strong>letras</strong> automáticamente.
           Si el diseño trae dos tamaños de letra (p.ej. un título y un subtítulo), se muestran como dos resultados separados a partir del mismo archivo.
+          </span>
         </p>
 
         <div class="upload-zone" id="upload-zone-1">
           <input type="file" id="image-input-1" accept=".cdr" style="display:none" />
           <div class="uz-pbar-wrap" id="pbar-wrap-1"><div class="uz-pbar" id="pbar-1"></div></div>
-          <span class="u-icon" id="uz-icon-1">☁️</span>
+          <span class="u-icon" id="uz-icon-1"><i class="fa-solid fa-cloud-arrow-up"></i></span>
           <h3 id="uz-title-1">Arrastra tu archivo .cdr aquí</h3>
           <p id="uz-sub-1">o haz clic para seleccionar &nbsp;&bull;&nbsp; CorelDRAW (.cdr) &mdash; máx. 16 MB</p>
           <div class="uz-status" id="uz-status-1"></div>
@@ -940,6 +908,7 @@
     <!-- CARD 2: ÁREAS -->
     <form method="post" id="calc-form">
       <input type="hidden" id="hidden-image-url" name="image_url" value="">
+      <input type="hidden" id="hidden-cdr-filename" name="cdr_filename" value="">
       <div class="card">
         <div class="card-head">
           <div class="ch-icon"><i class="fa-solid fa-layer-group"></i></div>
@@ -952,35 +921,33 @@
         <div class="card-body">
           <p class="hint">
             <i class="fa-solid fa-map-pin" style="color:var(--brand);flex-shrink:0;margin-top:.1rem"></i>
-            Marca los subprocesos que aplican al anuncio. El grupo y la cantidad se asignan <strong>automáticamente</strong> según medidas y piezas detectadas.
+            <span>Marca los subprocesos que aplican al anuncio. El grupo y la cantidad se asignan <strong>automáticamente</strong> según medidas y piezas detectadas.</span>
           </p>
 
-          {% set area_meta = {
-            'CORTE':         {'color': '#1d4ed8', 'bg': '#eff6ff', 'border': '#bfdbfe', 'icon': '✂️',  'accent': '#1d4ed8'},
-            'CANTO':         {'color': '#065f46', 'bg': '#ecfdf5', 'border': '#a7f3d0', 'icon': '✦',   'accent': '#059669'},
-            'ENSAMBLE':      {'color': '#6d28d9', 'bg': '#f5f3ff', 'border': '#ddd6fe', 'icon': '🔧',  'accent': '#7c3aed'},
-            'ILUMINACIÓN':   {'color': '#92400e', 'bg': '#fffbeb', 'border': '#fde68a', 'icon': '💡',  'accent': '#d97706'},
-            'TRIMCAP':       {'color': '#9d174d', 'bg': '#fdf2f8', 'border': '#fbcfe8', 'icon': '🏷️', 'accent': '#be185d'},
-            'PINTURA':       {'color': '#c2410c', 'bg': '#fff7ed', 'border': '#fed7aa', 'icon': '🎨',  'accent': '#ea580c'},
-            'SOLDADURA':     {'color': '#b91c1c', 'bg': '#fef2f2', 'border': '#fecaca', 'icon': '⚡',  'accent': '#dc2626'},
-            'TENSADO':       {'color': '#1e40af', 'bg': '#eff6ff', 'border': '#bfdbfe', 'icon': '🌊',  'accent': '#2563eb'},
-            'TERMOFORMADO':  {'color': '#0f766e', 'bg': '#f0fdfa', 'border': '#99f6e4', 'icon': '🔥',  'accent': '#0d9488'},
-            'ROTULACIÓN':    {'color': '#7c3aed', 'bg': '#faf5ff', 'border': '#e9d5ff', 'icon': '🖌️', 'accent': '#8b5cf6'},
-            'RANURADO':      {'color': '#b45309', 'bg': '#fefce8', 'border': '#fef08a', 'icon': '⚙️',  'accent': '#d97706'}
+          {% set area_icons = {
+            'CORTE':         'fa-scissors',
+            'CANTO':         'fa-border-all',
+            'ENSAMBLE':      'fa-screwdriver-wrench',
+            'ILUMINACIÓN':   'fa-lightbulb',
+            'TRIMCAP':       'fa-tag',
+            'PINTURA':       'fa-paint-roller',
+            'SOLDADURA':     'fa-bolt',
+            'TENSADO':       'fa-arrows-left-right',
+            'TERMOFORMADO':  'fa-fire',
+            'ROTULACIÓN':    'fa-paintbrush',
+            'RANURADO':      'fa-gear'
           } %}
 
           <div class="area-grid" id="area-grid">
             {% for area_name, subprocs in catalog.items() %}
               {% if area_name != 'RANURADO' %}
-              {% set st = area_meta.get(area_name, {'color': '#374151', 'bg': '#f9fafb', 'border': '#e5e7eb', 'icon': '⚙️', 'accent': '#6b7280'}) %}
+              {% set icon = area_icons.get(area_name, 'fa-gear') %}
               {% set sub_count = subprocs | length %}
               <div class="area-card">
-                <div class="area-card-accent" style="background:{{ st.accent }}"></div>
-                <div class="area-card-head" style="background:{{ st.bg }}; border-bottom-color:{{ st.border }}">
-                  <div class="area-icon-wrap" style="background:{{ st.bg }}; border:1.5px solid {{ st.border }}">
-                    {{ st.icon }}
-                  </div>
-                  <span class="area-title" style="color:{{ st.color }}">{{ area_name }}</span>
+                <div class="area-card-accent"></div>
+                <div class="area-card-head">
+                  <div class="area-icon-wrap"><i class="fa-solid {{ icon }}"></i></div>
+                  <span class="area-title">{{ area_name }}</span>
                   <span class="area-count">{{ sub_count }}</span>
                 </div>
                 <div class="area-card-body">
@@ -1048,7 +1015,7 @@
 
       <!-- CARD MATERIAL SUGERIDO -->
       <div class="card" id="material-card" style="display:none; border-color:#a7f3d0">
-        <div class="card-head" style="background:linear-gradient(180deg,#ecfdf5,#d1fae5);border-bottom-color:#a7f3d0">
+        <div class="card-head" style="background:#ecfdf5;border-bottom-color:#a7f3d0">
           <div class="ch-icon" style="background:#ecfdf5;border-color:#a7f3d0;color:#059669">
             <i class="fa-solid fa-boxes-stacked"></i>
           </div>
@@ -1073,7 +1040,7 @@
           <i class="fa-solid fa-lock"></i>
           <span>Selecciona el proceso de <strong>Pintura</strong> para activar</span>
         </div>
-        <div class="card-head" style="background:linear-gradient(180deg,#fff7ed,#ffedd5);border-bottom-color:#fed7aa">
+        <div class="card-head" style="background:#fff7ed;border-bottom-color:#fed7aa">
           <div class="ch-icon" style="background:#fff7ed;border-color:#fed7aa;color:#ea580c">
             <i class="fa-solid fa-palette"></i>
           </div>
@@ -1143,10 +1110,11 @@
             <i class="fa-solid fa-tag"></i>
             Nombre del cálculo
           </div>
-          <input type="text" name="calc_name" class="cn-input"
-                 placeholder="ej: SUBWAY 380×76 cm — Febrero 2025" />
+          <input type="text" name="calc_name" id="calc-name-input" class="cn-input"
+                 placeholder="ej: SUBWAY 380×76 cm — Febrero 2025"
+                 oninput="updateSubmitState()" />
         </div>
-        <button type="submit" class="btn btn-primary btn-submit" id="submit-btn">
+        <button type="submit" class="btn btn-primary btn-submit" id="submit-btn" disabled>
           <span class="spinner" id="submit-spin"></span>
           <span id="submit-lbl">Calcular y guardar &nbsp;&rarr;</span>
         </button>
@@ -1170,17 +1138,17 @@
     </div>
 
     <div class="help-rule info">
-      <span class="rule-ico">📐</span>
+      <span class="rule-ico"><i class="fa-solid fa-ruler-combined"></i></span>
       <p>El sistema lee tu archivo <strong>.cdr de CorelDRAW</strong> y toma el tamaño exacto de la <strong>página</strong> como medida de alto y ancho — no hace falta anotar cotas a mano.</p>
     </div>
 
     <div class="help-rule ok">
-      <span class="rule-ico">✅</span>
+      <span class="rule-ico"><i class="fa-solid fa-circle-check"></i></span>
       <p><strong>Convierte el texto a curvas.</strong> Cada letra debe ser un objeto de curvas; así el conteo es exacto aunque las letras se toquen entre sí (la "i" y la "f" en cursiva, por ejemplo).</p>
     </div>
 
     <div class="help-rule warn">
-      <span class="rule-ico">⚠️</span>
+      <span class="rule-ico"><i class="fa-solid fa-triangle-exclamation"></i></span>
       <p><strong>Si la hoja trae varios conceptos</strong> (por ejemplo letras y una bandera), se usa el concepto cuyo nombre dice "Letras" y se avisa cuáles se dejaron fuera. Las <strong>partes del logo</strong> cuentan como letras.</p>
     </div>
 
@@ -1392,7 +1360,13 @@
     for (const h of heightsList) total += getTimeForItem(area, sub, h, widthCm).mins;
     return {
       mins: total / heightsList.length,
-      group: `Regresión letra por letra (${heightsList.length})`,
+      // OJO: "Regresión" a secas, no una etiqueta bonita — es la palabra
+      // clave que el backend reconoce (junto con heights_detail[]) para
+      // sumar el tiempo real letra por letra; el backend arma su propia
+      // etiqueta descriptiva para guardar en el resultado. Si aquí se manda
+      // ya la etiqueta bonita, el backend la trata como si fuera el nombre
+      // de un grupo del catálogo y truena con "No se encontró tiempo para...".
+      group: 'Regresión',
       height: null, width: widthCm,
     };
   }
@@ -1713,16 +1687,16 @@
     const pbar   = document.getElementById('pbar-wrap-' + idx);
     zone.classList.remove('has-file', 'analyzing');
     if (state === 'idle') {
-      icon.textContent = '☁️'; title.textContent = 'Arrastra tu archivo .cdr aquí';
+      icon.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i>'; title.textContent = 'Arrastra tu archivo .cdr aquí';
       sub.textContent = 'o haz clic para seleccionar • CorelDRAW (.cdr) — máx. 16 MB';
       status.textContent = ''; status.className = 'uz-status'; pbar.style.display = 'none';
     } else if (state === 'ready') {
-      icon.textContent = '📄'; title.textContent = name || 'Archivo seleccionado';
+      icon.innerHTML = '<i class="fa-solid fa-file"></i>'; title.textContent = name || 'Archivo seleccionado';
       sub.textContent = 'Haz clic en "Analizar archivo" para detectar medidas y piezas';
-      status.textContent = '✔ Listo para analizar'; status.className = 'uz-status green';
+      status.textContent = 'Listo para analizar'; status.className = 'uz-status green';
       zone.classList.add('has-file'); pbar.style.display = 'none';
     } else if (state === 'analyzing') {
-      icon.textContent = '🔄'; title.textContent = 'Analizando archivo…';
+      icon.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i>'; title.textContent = 'Analizando archivo…';
       sub.textContent = 'Detectando medidas y contando piezas';
       status.textContent = 'Procesando…'; status.className = 'uz-status orange';
       zone.classList.add('analyzing'); pbar.style.display = 'block';
@@ -1733,7 +1707,7 @@
       clearInterval(zone._iv);
       document.getElementById('pbar-' + idx).style.width = '100%';
       setTimeout(() => pbar.style.display = 'none', 600);
-      icon.textContent = '✅'; title.textContent = 'Análisis completado';
+      icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>'; title.textContent = 'Análisis completado';
       sub.textContent = 'Revisa y ajusta los valores detectados abajo';
       status.textContent = 'Listo'; status.className = 'uz-status green';
       zone.classList.add('has-file');
@@ -1753,6 +1727,7 @@
     document.getElementById('analyze-ok-' + idx).style.display = 'none';
     detectedLetterHeights = null;
     detectedLetterHeights2 = null;
+    document.getElementById('hidden-cdr-filename').value = '';
     analyzeBtn.style.display = 'inline-flex';
     analyzeBtn.className = 'btn btn-dark';
     analyzeBtn.disabled = false;
@@ -1811,6 +1786,9 @@
         }
         if (data.image_url) {
           document.getElementById('hidden-image-url').value = data.image_url;
+        }
+        if (data.filename) {
+          document.getElementById('hidden-cdr-filename').value = data.filename;
         }
 
         // Si el .cdr trae letras de dos tamaños en el mismo concepto (p.ej.
@@ -1884,8 +1862,28 @@
     });
   })();
 
+  /* ══ NOMBRE OBLIGATORIO ══ */
+  function updateSubmitState() {
+    const hasName = document.getElementById('calc-name-input').value.trim().length > 0;
+    document.getElementById('submit-btn').disabled = !hasName;
+    document.getElementById('sticky-submit-btn').disabled = !hasName;
+  }
+  // Por si el navegador autocompleta el campo o se vuelve a esta página
+  // con el back/forward (bfcache) ya con un nombre puesto.
+  updateSubmitState();
+  window.addEventListener('pageshow', updateSubmitState);
+
   /* ══ SUBMIT ══ */
   document.getElementById('calc-form').addEventListener('submit', function(e) {
+    const nameInput = document.getElementById('calc-name-input');
+    if (!nameInput.value.trim()) {
+      e.preventDefault();
+      toast('Ponle un nombre al cálculo antes de continuar.', 'warn');
+      nameInput.classList.add('shake');
+      nameInput.focus();
+      setTimeout(() => nameInput.classList.remove('shake'), 500);
+      return;
+    }
     const items = Object.values(selectedItems);
     if (!items.length) {
       e.preventDefault();

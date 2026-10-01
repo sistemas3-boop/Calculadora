@@ -7,3 +7,4 @@ pymupdf>=1.23
 python-dotenv>=1.0
 Flask-SQLAlchemy>=3.0
 Flask-Login>=0.6
+matplotlib>=3.8
