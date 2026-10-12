@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 import shutil
@@ -102,6 +103,8 @@ class Calculation(db.Model):
     results_json    = db.Column(db.Text, nullable=False)
     image_url       = db.Column(db.String(512), nullable=True)
     nesting_pdf_url = db.Column(db.String(512), nullable=True)
+    led_brand       = db.Column(db.String(20), nullable=True)
+    led_diagram_url = db.Column(db.String(512), nullable=True)
 
 
 @login_manager.user_loader
@@ -172,45 +175,84 @@ def compute_regression(catalog: Dict, area: str, subprocess: str) -> Optional[Tu
 # ══ MATERIAL SUGGESTIONS ══════════════════════════════════════════════════════
 
 _MATERIAL_RULES = [
-    (lambda area, sub: area == "CORTE" and "acrílico" in sub.lower(),
+    (lambda area, sub, brand: area == "CORTE" and "acrílico" in sub.lower(),
      "CORTE", "Acrílico 3 mm", "El color depende de la variabilidad del componente"),
-    (lambda area, sub: area == "CORTE" and "lámina" in sub.lower(),
+    (lambda area, sub, brand: area == "CORTE" and "lámina" in sub.lower(),
      "CORTE", "Aluminio blanco C.19", "El color depende de la variabilidad del componente"),
-    (lambda area, sub: area == "CORTE" and "trovicel" in sub.lower(),
+    (lambda area, sub, brand: area == "CORTE" and "trovicel" in sub.lower(),
      "CORTE", "Trovicel 10 mm", "El color depende de la variabilidad del componente"),
-    (lambda area, sub: area == "TRIMCAP",
+    (lambda area, sub, brand: area == "CANTO",
+     "CANTO", "Canto", ""),
+    (lambda area, sub, brand: area == "TRIMCAP",
      "TRIMCAP", 'Silvatrim 1"', "El color varía"),
-    (lambda area, sub: area == "TERMOFORMADO",
+    (lambda area, sub, brand: area == "TERMOFORMADO",
      "TERMOFORMADO", "Acrílico blanco 3 mm", "El color depende de la variabilidad del componente"),
-    (lambda area, sub: area == "ROTULACIÓN",
+    (lambda area, sub, brand: area == "ROTULACIÓN",
      "ROTULACIÓN", "Vinil impreso", "El color depende de la variabilidad del componente"),
-    (lambda area, sub: area == "TENSADO",
+    (lambda area, sub, brand: area == "TENSADO",
      "TENSADO", "Lona translúcida", "El color depende de la variabilidad del componente"),
-    (lambda area, sub: area == "PINTURA",
+    (lambda area, sub, brand: area == "PINTURA",
      "PINTURA", "Pintura para cantos", "Brillante / Mate / Semi mate"),
-    (lambda area, sub: area == "PINTURA",
+    (lambda area, sub, brand: area == "PINTURA",
      "PINTURA", "Fondear estructuras", "El color depende de la variabilidad del componente"),
-    (lambda area, sub: area == "PINTURA",
+    (lambda area, sub, brand: area == "PINTURA",
      "PINTURA", "Pintura interior de letras", "El color depende de la variabilidad del componente"),
-    (lambda area, sub: area == "PINTURA",
+    (lambda area, sub, brand: area == "PINTURA",
      "PINTURA", "Bicapa", "Mate / Transparente"),
-    (lambda area, sub: area == "ILUMINACIÓN" and sub == "Neón",
+    (lambda area, sub, brand: area == "ILUMINACIÓN" and sub == "Neón",
      "ILUMINACIÓN", "NEON FLEX BLANCO FRIO SIMETRICA", ""),
-    (lambda area, sub: area == "ILUMINACIÓN" and sub == "Neón",
+    (lambda area, sub, brand: area == "ILUMINACIÓN" and sub == "Neón",
      "ILUMINACIÓN", "NEON FLEX BLANCO CALIDO SIMETRICA", ""),
+    # Iluminación LED: el módulo depende de si el anuncio es para Dekorama
+    # o para Lumicolor (ver selector en el formulario).
+    (lambda area, sub, brand: area == "ILUMINACIÓN" and sub != "Neón" and brand == "dekorama",
+     "ILUMINACIÓN", "Módulo led Interwan blanco frío o cálido", ""),
+    (lambda area, sub, brand: area == "ILUMINACIÓN" and sub != "Neón" and brand != "dekorama",
+     "ILUMINACIÓN", "Módulo led Samsung blanco frío", ""),
 ]
 
 
-def get_material_suggestions(rows: List[Dict], params: Dict = None) -> List[Dict]:
+def get_material_suggestions(rows: List[Dict], params: Dict = None, led_brand: str = "lumicolor") -> List[Dict]:
     seen: set = set()
     suggestions: List[Dict] = []
     for row in rows:
         area = row.get("area", "")
         sub  = row.get("subprocess", "")
         for match_fn, tag, material, note in _MATERIAL_RULES:
-            if material not in seen and match_fn(area, sub):
+            if material not in seen and match_fn(area, sub, led_brand):
                 seen.add(material)
                 suggestions.append({"area": tag, "material": material, "note": note})
+
+    # Perímetro real (contorno + huecos) de las filas de CANTO/TRIMCAP que
+    # traen letra por letra geométrica — cuántos metros de canto/Silvatrim
+    # hay que pedir, no solo el color.
+    for mat_area in ("CANTO", "TRIMCAP"):
+        perimeter_cm = sum(
+            row["perimeter_cm"] for row in rows
+            if row.get("area") == mat_area and row.get("perimeter_cm")
+        )
+        if perimeter_cm:
+            for s in suggestions:
+                if s["area"] == mat_area:
+                    s["note"] = f'{s["note"]} · {perimeter_cm / 100:.2f} m necesarios'.strip(" ·")
+
+    # Metros lineales de LED (contorno real, doblado en trazos gruesos —
+    # ver nesting.piece_led_meters) de las filas de ILUMINACIÓN con letra
+    # por letra geométrica — cuántos metros de tira/módulos LED pedir.
+    led_meters_total = sum(
+        row["led_meters"] for row in rows
+        if row.get("area") == "ILUMINACIÓN" and row.get("led_meters")
+    )
+    led_count_total = sum(
+        row["led_count"] for row in rows
+        if row.get("area") == "ILUMINACIÓN" and row.get("led_count")
+    )
+    if led_meters_total:
+        for s in suggestions:
+            if s["area"] == "ILUMINACIÓN" and "led" in s["material"].lower():
+                extra = f'{led_meters_total:.2f} m de LED (~{led_count_total} LEDs)'
+                s["note"] = f'{s["note"]} · {extra}'.strip(" ·")
+
     return suggestions
 
 
@@ -727,6 +769,25 @@ def _build_nesting_pdf(cdr_filename: str, letter_heights_by_material: Dict[str, 
     return url_for("uploaded_file", filename=out_name)
 
 
+def _build_led_diagram_pdf(cdr_filename: str, led_letter_heights: List[List[float]]) -> Optional[str]:
+    """Genera el diagrama de referencia de LED (ver
+    nesting.build_led_diagram_pdf) para todas las filas de ILUMINACIÓN
+    aplicadas con letra por letra — una página por grupo de letras. Devuelve
+    la URL pública del PDF, o None si no se pudo generar nada."""
+    cdr_path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(cdr_filename))
+    if not os.path.exists(cdr_path):
+        return None
+    pdf_path = _convert_cdr_to_pdf(cdr_path, app.config["UPLOAD_FOLDER"])
+    base = os.path.splitext(os.path.basename(cdr_path))[0]
+    out_name = f"led_{base}_{int(time.time())}.pdf"
+    out_path = os.path.join(app.config["UPLOAD_FOLDER"], out_name)
+
+    result_path = nesting.build_led_diagram_pdf(pdf_path, led_letter_heights, out_path)
+    if not result_path:
+        return None
+    return url_for("uploaded_file", filename=out_name)
+
+
 def analyze_cdr_file(cdr_path: str) -> Dict[str, Any]:
     """Analiza un archivo .cdr (CorelDRAW).
 
@@ -989,7 +1050,9 @@ def index():
         colores_pintura   = max(1, int(request.form.get("colores_pintura", 1)))
         secado_minutes    = float(request.form.get("secado_minutes", 120)) * colores_pintura
         calc_name         = request.form.get("calc_name", "").strip() or "Cálculo sin nombre"
-
+        led_brand         = (request.form.get("led_brand") or "lumicolor").strip().lower()
+        if led_brand not in ("dekorama", "lumicolor"):
+            led_brand = "lumicolor"
 
         areas         = request.form.getlist("areas[]")
         subprocesses  = request.form.getlist("subprocesses[]")
@@ -1012,6 +1075,31 @@ def index():
         # Grupo 2 del mismo archivo si ambos se mandan a cortar) — todas
         # las del mismo material se juntan en su propio plano más abajo.
         nesting_letter_heights_by_material: Dict[str, List[List[float]]] = {}
+
+        # Alturas reales de cada fila de ILUMINACIÓN (no Neón) aplicada con
+        # letra por letra — para el diagrama de referencia de LED (ver
+        # _build_led_diagram_pdf), una página por grupo de letras.
+        led_letter_heights: List[List[float]] = []
+
+        # Conversión del .cdr a PDF, perezosa y en caché: la necesitan tanto
+        # el nesting (más abajo) como el perímetro real por letra de CANTO/
+        # TRIMCAP (ver piece_perimeters_mm) — una sola conversión para
+        # ambos usos, no una por fila.
+        cdr_filename = request.form.get("cdr_filename", "").strip()
+        _cdr_pdf_cache: Dict[str, Optional[str]] = {}
+
+        def _get_cdr_pdf_path() -> Optional[str]:
+            if "path" not in _cdr_pdf_cache:
+                path = None
+                if cdr_filename and LIBREOFFICE_AVAILABLE and PYMUPDF_AVAILABLE:
+                    try:
+                        cdr_path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(cdr_filename))
+                        if os.path.exists(cdr_path):
+                            path = _convert_cdr_to_pdf(cdr_path, app.config["UPLOAD_FOLDER"])
+                    except Exception:
+                        path = None
+                _cdr_pdf_cache["path"] = path
+            return _cdr_pdf_cache["path"]
 
         # Pad lists to match row count
         widths         = widths         + [""] * max(0, len(areas) - len(widths))
@@ -1083,6 +1171,40 @@ def index():
                 else:
                     mins = get_group_time(catalog, area, subprocess, group)
                     total_mins = mins * qty
+
+                # Perímetro real de cada letra (contorno + huecos, ver
+                # nesting.piece_perimeters_mm) para CANTO/TRIMCAP: no afecta
+                # el tiempo (sigue siendo por alto, como siempre), es un
+                # dato aparte para la lista de materiales — cuántos cm de
+                # canto/Silvatrim se necesitan de verdad.
+                perimeter_cm = None
+                if area in ("CANTO", "TRIMCAP") and letter_heights:
+                    pdf_path = _get_cdr_pdf_path()
+                    if pdf_path:
+                        try:
+                            perims_mm = nesting.piece_perimeters_mm(pdf_path, letter_heights)
+                        except Exception:
+                            perims_mm = None
+                        if perims_mm:
+                            perimeter_cm = round(sum(perims_mm) / 10.0, 1)
+
+                # Metros lineales de LED (contorno real, doblado si el
+                # trazo de la letra es grueso — ver nesting.piece_led_meters)
+                # para ILUMINACIÓN (no Neón, que se mide distinto): tampoco
+                # afecta el tiempo, es el dato real para pedir material.
+                led_meters = None
+                led_count = None
+                if area == "ILUMINACIÓN" and subprocess != "Neón" and letter_heights:
+                    pdf_path = _get_cdr_pdf_path()
+                    if pdf_path:
+                        try:
+                            led_results = nesting.piece_led_meters(pdf_path, letter_heights)
+                        except Exception:
+                            led_results = None
+                        if led_results:
+                            led_meters = round(sum(r["led_meters"] for r in led_results), 2)
+                            led_count = math.ceil(sum(r["led_count"] for r in led_results))
+
                 rows.append({
                     "area": area,
                     "subprocess": subprocess,
@@ -1090,12 +1212,17 @@ def index():
                     "quantity": qty,
                     "mins_per_piece": round(mins, 2),
                     "total_mins": round(total_mins, 2),
+                    "perimeter_cm": perimeter_cm,
+                    "led_meters": led_meters,
+                    "led_count": led_count,
                 })
                 if area == "CORTE" and letter_heights:
                     material = nesting.material_for_subprocess(subprocess)
                     if material:
                         material_label = material[0]
                         nesting_letter_heights_by_material.setdefault(material_label, []).append(letter_heights)
+                if area == "ILUMINACIÓN" and subprocess != "Neón" and letter_heights:
+                    led_letter_heights.append(letter_heights)
             except ValueError as e:
                 errors.append(str(e))
 
@@ -1124,12 +1251,18 @@ def index():
         }
 
         nesting_pdf_url = None
-        cdr_filename = request.form.get("cdr_filename", "").strip()
         if nesting_letter_heights_by_material and cdr_filename and LIBREOFFICE_AVAILABLE and PYMUPDF_AVAILABLE:
             try:
                 nesting_pdf_url = _build_nesting_pdf(cdr_filename, nesting_letter_heights_by_material)
             except Exception:
                 nesting_pdf_url = None  # el cálculo no debe fallar por esto
+
+        led_diagram_url = None
+        if led_letter_heights and cdr_filename and LIBREOFFICE_AVAILABLE and PYMUPDF_AVAILABLE:
+            try:
+                led_diagram_url = _build_led_diagram_pdf(cdr_filename, led_letter_heights)
+            except Exception:
+                led_diagram_url = None  # el cálculo no debe fallar por esto
 
         calc = Calculation(
             user_id=current_user.id,
@@ -1139,12 +1272,25 @@ def index():
             results_json=json.dumps(results),
             image_url=request.form.get("image_url") or None,
             nesting_pdf_url=nesting_pdf_url,
+            led_brand=led_brand,
+            led_diagram_url=led_diagram_url,
         )
         db.session.add(calc)
         db.session.commit()
         return redirect(url_for("result", calc_id=calc.id))
 
     return render_template("index.html", catalog=catalog)
+
+
+def _nesting_pdf_path(calc) -> Optional[str]:
+    """Resuelve la ruta en disco del PDF de nesting de un cálculo, a partir
+    de su nesting_pdf_url (p.ej. "/uploads/nesting_x.pdf"). None si no tiene
+    nesting o el archivo ya no existe."""
+    if not calc.nesting_pdf_url:
+        return None
+    filename = calc.nesting_pdf_url.rsplit("/", 1)[-1]
+    path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    return path if os.path.exists(path) else None
 
 
 @app.route("/result/<int:calc_id>")
@@ -1157,8 +1303,41 @@ def result(calc_id):
     rows      = json.loads(calc.rows_json)
     params    = json.loads(calc.params_json)
     results   = json.loads(calc.results_json)
-    materials = get_material_suggestions(rows, params)
-    return render_template("result.html", calc=calc, rows=rows, materials=materials, **params, **results)
+    materials = get_material_suggestions(rows, params, calc.led_brand or "lumicolor")
+    nesting_pdf_pages = 0
+    if PYMUPDF_AVAILABLE:
+        nesting_path = _nesting_pdf_path(calc)
+        if nesting_path:
+            try:
+                with fitz.open(nesting_path) as _doc:
+                    nesting_pdf_pages = _doc.page_count
+            except Exception:
+                nesting_pdf_pages = 0
+    return render_template("result.html", calc=calc, rows=rows, materials=materials,
+                           nesting_pdf_pages=nesting_pdf_pages, **params, **results)
+
+
+@app.route("/result/<int:calc_id>/nesting_preview/<int:page>.png")
+@login_required
+def nesting_preview_page(calc_id, page):
+    """Rasteriza una página del PDF de nesting a PNG, para incrustarla como
+    <img> dentro de result.html y que el 'Imprimir' del navegador la incluya
+    como páginas extra del mismo PDF (mismo formato de siempre, nesting
+    agregado al final)."""
+    calc = db.session.get(Calculation, calc_id)
+    if calc is None or not PYMUPDF_AVAILABLE:
+        return "", 404
+    nesting_path = _nesting_pdf_path(calc)
+    if not nesting_path:
+        return "", 404
+    with fitz.open(nesting_path) as doc:
+        if page < 0 or page >= doc.page_count:
+            return "", 404
+        pix = doc[page].get_pixmap(dpi=150)
+        png_bytes = pix.tobytes("png")
+    resp = make_response(png_bytes)
+    resp.headers["Content-Type"] = "image/png"
+    return resp
 
 
 @app.route("/result/<int:calc_id>/print")
@@ -1170,7 +1349,7 @@ def result_print(calc_id):
     rows      = json.loads(calc.rows_json)
     params    = json.loads(calc.params_json)
     results   = json.loads(calc.results_json)
-    materials = get_material_suggestions(rows, params)
+    materials = get_material_suggestions(rows, params, calc.led_brand or "lumicolor")
     return render_template("print_result.html", calc=calc, rows=rows, materials=materials, **params, **results)
 
 
@@ -1185,14 +1364,29 @@ def result_download(calc_id):
     rows      = json.loads(calc.rows_json)
     params    = json.loads(calc.params_json)
     results   = json.loads(calc.results_json)
-    materials = get_material_suggestions(rows, params)
+    materials = get_material_suggestions(rows, params, calc.led_brand or "lumicolor")
     html = render_template("print_result.html", calc=calc, rows=rows, materials=materials,
                            base_url=request.host_url, **params, **results)
     buf = BytesIO()
     pisa.CreatePDF(html, dest=buf, encoding="utf-8")
     buf.seek(0)
+    pdf_bytes = buf.read()
+
+    if calc.nesting_pdf_url and PYMUPDF_AVAILABLE:
+        nesting_filename = calc.nesting_pdf_url.rsplit("/", 1)[-1]
+        nesting_path = os.path.join(app.config["UPLOAD_FOLDER"], nesting_filename)
+        if os.path.exists(nesting_path):
+            try:
+                merged = fitz.open(stream=pdf_bytes, filetype="pdf")
+                with fitz.open(nesting_path) as nesting_doc:
+                    merged.insert_pdf(nesting_doc)
+                pdf_bytes = merged.tobytes()
+                merged.close()
+            except Exception:
+                pass  # si falla la fusión, se descarga solo la cotización
+
     filename = f"calculo_{calc.id}.pdf"
-    resp = make_response(buf.read())
+    resp = make_response(pdf_bytes)
     resp.headers["Content-Type"] = "application/pdf"
     resp.headers["Content-Disposition"] = f"attachment; filename={filename}"
     return resp
@@ -1358,6 +1552,12 @@ with app.app_context():
             _conn.commit()
         if "nesting_pdf_url" not in cols:
             _conn.execute(db.text("ALTER TABLE lc_calculation ADD COLUMN nesting_pdf_url VARCHAR(512)"))
+            _conn.commit()
+        if "led_brand" not in cols:
+            _conn.execute(db.text("ALTER TABLE lc_calculation ADD COLUMN led_brand VARCHAR(20)"))
+            _conn.commit()
+        if "led_diagram_url" not in cols:
+            _conn.execute(db.text("ALTER TABLE lc_calculation ADD COLUMN led_diagram_url VARCHAR(512)"))
             _conn.commit()
     if not User.query.first():
         admin = User(

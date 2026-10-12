@@ -233,6 +233,7 @@
     @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
     @keyframes onlinePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.3)} }
 
+    .nesting-print-pages { display:none; }
     @media print {
       .completion-bar,.sidebar,.topbar,.ph-crumb,.actions,.tl-right { display:none !important; }
       body { background:white; display:block; }
@@ -241,6 +242,8 @@
       .two-col { grid-template-columns:1fr; }
       .calc-image-box { display:block !important; page-break-inside:avoid; }
       .calc-image-box img { max-width:100%; max-height:260px; }
+      .nesting-print-pages { display:block; }
+      .nesting-print-pages img { display:block; width:100%; page-break-before:always; }
     }
     @media (max-width:900px) { .two-col { grid-template-columns:1fr; } }
     @media (max-width:768px) { .sidebar{display:none} .page{padding:1rem .9rem 2.5rem} .summary-row{grid-template-columns:1fr 1fr} }
@@ -409,6 +412,12 @@
                 <div class="tl-item-left">
                   <span class="tl-subprocess">{{ row.subprocess }}</span>
                   <span class="tl-group-name">{{ row.group }}</span>
+                  {% if row.perimeter_cm %}
+                  <span class="tl-group-name" style="color:var(--muted)">· Perímetro: {{ row.perimeter_cm }} cm</span>
+                  {% endif %}
+                  {% if row.led_meters %}
+                  <span class="tl-group-name" style="color:var(--muted)">· LED: {{ row.led_meters }} m (~{{ row.led_count }} LEDs)</span>
+                  {% endif %}
                 </div>
                 <div class="tl-item-right">
                   <span class="tl-qty">× {{ row.quantity | int }} piezas</span>
@@ -497,7 +506,21 @@
         <i class="fa-solid fa-file-pdf"></i>&nbsp; Plano de corte (nesting) PDF
       </a>
       {% endif %}
+      {% if calc.led_diagram_url %}
+      <a href="{{ calc.led_diagram_url }}" class="btn btn-outline" target="_blank" rel="noopener"
+         style="border-color:rgba(192,57,43,.35);color:#c0392b;background:#fdecea">
+        <i class="fa-solid fa-lightbulb"></i>&nbsp; Diagrama de LED
+      </a>
+      {% endif %}
     </div>
+
+    {% if nesting_pdf_pages %}
+    <div class="nesting-print-pages">
+      {% for i in range(nesting_pdf_pages) %}
+      <img src="{{ url_for('nesting_preview_page', calc_id=calc.id, page=i) }}" alt="Plano de corte {{ i + 1 }}">
+      {% endfor %}
+    </div>
+    {% endif %}
 
   </div><!-- /page -->
 </div><!-- /content -->

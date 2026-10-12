@@ -637,6 +637,24 @@
     }
     .reverso-badge.show { display: inline-block; }
 
+    /* ══ MARCA ILUMINACIÓN LED ══ */
+    .brand-wrap {
+      margin-top: .4rem; padding: .5rem .55rem .45rem;
+      border-top: 1px dashed var(--border);
+    }
+    .brand-label {
+      font-size: .78rem; color: var(--text-2); font-weight: 500; margin-bottom: .35rem;
+    }
+    .brand-radio-group { display: flex; gap: .9rem; flex-wrap: wrap; }
+    .brand-radio {
+      display: flex; align-items: center; gap: .4rem;
+      cursor: pointer; user-select: none;
+      font-size: .78rem; color: var(--text-2); font-weight: 500;
+    }
+    .brand-radio input[type=radio] { accent-color: var(--brand); width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; }
+    .brand-radio small { color: var(--muted); font-weight: 400; }
+    .brand-radio:has(input:checked) { color: var(--brand); font-weight: 700; }
+
     /* ══ PINTURA LOCK ══ */
     .pintura-overlay {
       position: absolute; inset: 0; z-index: 10; border-radius: var(--radius);
@@ -962,7 +980,7 @@
                              data-sub="{{ sub_name }}"
                              onchange="onSubCheck(this)" />
                       <span class="sub-name">{{ sub_name }}</span>
-                      <input type="number" class="sub-qty" value="1" min="1" step="1"
+                      <input type="number" class="sub-qty" value="1" min="0" step="1"
                              onclick="event.stopPropagation()"
                              oninput="onQtyChange(this)" />
                       <span class="sub-qty2-wrap" onclick="event.stopPropagation()">
@@ -983,6 +1001,23 @@
                       <span class="reverso-hint">&nbsp;(duplica el tiempo de corte)</span>
                       <span class="reverso-badge" id="reverso-badge">×2</span>
                     </label>
+                  </div>
+                  {% endif %}
+                  {% if area_name == 'ILUMINACIÓN' %}
+                  <div class="brand-wrap" onclick="event.stopPropagation()">
+                    <div class="brand-label">Iluminación LED &mdash; ¿para Dekorama o Lumicolor?</div>
+                    <div class="brand-radio-group">
+                      <label class="brand-radio">
+                        <input type="radio" name="led_brand_radio" value="lumicolor" checked
+                               onchange="onLedBrandChange(this)" />
+                        <span>Lumicolor <small>(Samsung)</small></span>
+                      </label>
+                      <label class="brand-radio">
+                        <input type="radio" name="led_brand_radio" value="dekorama"
+                               onchange="onLedBrandChange(this)" />
+                        <span>Dekorama <small>(Interwan)</small></span>
+                      </label>
+                    </div>
                   </div>
                   {% endif %}
                 </div>
@@ -1176,8 +1211,23 @@
   // mano (ver los listeners de esos inputs).
   let detectedLetterHeights  = null;
   let detectedLetterHeights2 = null;
+  // Medidas letra-por-letra del Grupo 1 ya leídas del análisis pero NO
+  // confirmadas todavía — se vuelven "detectedLetterHeights" (las que de
+  // verdad usa onSubCheck) recién cuando el usuario aplica el Grupo 1 (ver
+  // applyAnalysis). Sin este paso intermedio, marcar una fila como
+  // seleccionada aplicaba el Grupo 1 aunque el usuario solo hubiera
+  // confirmado el Grupo 2 con su propio botón.
+  let pendingLetterHeights1  = null;
+  // Si el archivo trae dos grupos de letras, marcar una fila ANTES de
+  // aplicar el Grupo 1 no debe contar "1 pieza" de más por default — esa
+  // pieza fantasma se sumaba al total aunque el usuario solo quisiera usar
+  // el Grupo 2. Con un solo grupo (o sin archivo analizado) sí tiene
+  // sentido que la cantidad arranque en 1 para que el usuario la edite a
+  // mano.
+  let twoGroupsDetected = false;
   const selectedItems = {};
   let reversoActive = false;
+  let ledBrand = 'lumicolor';
 
   /* ══ TOAST ══ */
   function toast(msg, type = 'info', ms = 3500) {
@@ -1469,13 +1519,13 @@
       note: ''
     },
     {
-      match: (area, sub) => area === 'ILUMINACIÓN' && sub !== 'Neón',
-      area: 'ILUMINACIÓN', material: 'Módulo led Interone blanco frío o cálido (estándar)',
+      match: (area, sub) => area === 'ILUMINACIÓN' && sub !== 'Neón' && ledBrand === 'dekorama',
+      area: 'ILUMINACIÓN', material: 'Módulo led Interwan blanco frío o cálido',
       note: ''
     },
     {
-      match: (area, sub) => area === 'ILUMINACIÓN' && sub !== 'Neón',
-      area: 'ILUMINACIÓN', material: 'Módulo led Samsung blanco frío (sólo para dekorama)',
+      match: (area, sub) => area === 'ILUMINACIÓN' && sub !== 'Neón' && ledBrand !== 'dekorama',
+      area: 'ILUMINACIÓN', material: 'Módulo led Samsung blanco frío',
       note: ''
     },
     {
@@ -1534,6 +1584,11 @@
     toast(reversoActive ? 'Reverso activado — tiempo de corte ×2' : 'Reverso desactivado', reversoActive ? 'warn' : 'info');
   }
 
+  function onLedBrandChange(radio) {
+    ledBrand = radio.value;
+    updateMaterials();
+  }
+
   function checkPinturaLock() {
     const hasPintura = Object.values(selectedItems).some(it => it.area === 'PINTURA');
     const overlay = document.getElementById('pintura-overlay');
@@ -1569,7 +1624,11 @@
       const res  = useLetters
         ? getTimeForItemLetters(area, sub, detectedLetterHeights, detectedWidth)
         : getTimeForItem(area, sub, detectedHeight, detectedWidth);
-      const qty  = detectedPieces || 1;
+      // Con dos grupos detectados, mientras el Grupo 1 no se aplique esta
+      // fila no debe contar ninguna pieza por su cuenta (en vez del 1 de
+      // siempre) — si no, se suma una pieza fantasma aunque el usuario solo
+      // quiera usar el Grupo 2.
+      const qty  = detectedPieces || (twoGroupsDetected ? 0 : 1);
       const res2 = useLetters2
         ? getTimeForItemLetters(area, sub, detectedLetterHeights2, detectedWidth2)
         : getTimeForItem(area, sub, detectedHeight2, detectedWidth2);
@@ -1597,7 +1656,11 @@
     const item = input.closest('.sub-item');
     const key  = item.dataset.area + '::' + item.dataset.sub;
     if (selectedItems[key]) {
-      selectedItems[key].qty = parseInt(input.value) || 1;
+      // 0 es un valor válido a propósito (fila sin ningún grupo aplicado
+      // todavía) — "|| 1" lo pisaría porque 0 es falsy en JS, así que solo
+      // se cae a 1 cuando el campo queda vacío/no numérico (NaN).
+      const v = parseInt(input.value);
+      selectedItems[key].qty = Number.isNaN(v) ? 1 : v;
       updateLive();
     }
   }
@@ -1606,7 +1669,8 @@
     const item = input.closest('.sub-item');
     const key  = item.dataset.area + '::' + item.dataset.sub;
     if (selectedItems[key]) {
-      selectedItems[key].qty2 = parseInt(input.value) || 1;
+      const v = parseInt(input.value);
+      selectedItems[key].qty2 = Number.isNaN(v) ? 1 : v;
       updateLive();
     }
   }
@@ -1635,8 +1699,8 @@
   // Si el usuario edita Alto o Piezas a mano, esa fila deja de sumarse
   // letra por letra (el detalle real ya no corresponde al valor escrito) y
   // vuelve al modo de siempre: un alto × cantidad.
-  document.getElementById('val-height-1').addEventListener('input', () => { detectedLetterHeights  = null; });
-  document.getElementById('val-pieces-1').addEventListener('input', () => { detectedLetterHeights  = null; });
+  document.getElementById('val-height-1').addEventListener('input', () => { detectedLetterHeights = null; pendingLetterHeights1 = null; });
+  document.getElementById('val-pieces-1').addEventListener('input', () => { detectedLetterHeights = null; pendingLetterHeights1 = null; });
   document.getElementById('val-height-2').addEventListener('input', () => { detectedLetterHeights2 = null; });
   document.getElementById('val-pieces-2').addEventListener('input', () => { detectedLetterHeights2 = null; });
 
@@ -1649,6 +1713,7 @@
 
     if (idx === 1) {
       detectedHeight = h; detectedWidth = w; detectedPieces = p;
+      detectedLetterHeights = pendingLetterHeights1;
     } else {
       detectedHeight2 = h; detectedWidth2 = w; detectedPieces2 = p;
       image2Applied = true;
@@ -1727,6 +1792,8 @@
     document.getElementById('analyze-ok-' + idx).style.display = 'none';
     detectedLetterHeights = null;
     detectedLetterHeights2 = null;
+    pendingLetterHeights1 = null;
+    twoGroupsDetected = false;
     document.getElementById('hidden-cdr-filename').value = '';
     analyzeBtn.style.display = 'inline-flex';
     analyzeBtn.className = 'btn btn-dark';
@@ -1798,10 +1865,14 @@
         const groups = data.letter_groups || [];
         const g0 = groups[0] || null;
         const twoGroups = groups.length >= 2;
+        twoGroupsDetected = twoGroups;
         // Alto real de cada letra (no el promedio/nominal del grupo): si
         // hay al menos 2 piezas con medida propia, se usa para sumar el
-        // tiempo letra por letra en vez de "un alto × cantidad".
-        detectedLetterHeights = (g0 && g0.pieces && g0.pieces.length > 1)
+        // tiempo letra por letra en vez de "un alto × cantidad". Se guarda
+        // como PENDIENTE — applyAnalysis(1) es quien la confirma como
+        // detectedLetterHeights de verdad (ver declaración de
+        // pendingLetterHeights1 más arriba).
+        pendingLetterHeights1 = (g0 && g0.pieces && g0.pieces.length > 1)
           ? g0.pieces.map(p => p.height_cm) : null;
         const heightCm = g0 ? g0.height_cm : data.height_cm;
         const piecesN  = g0 ? g0.letters    : data.pieces;
@@ -1833,7 +1904,15 @@
           toast(`El archivo también trae: ${data.skipped_pieces.join(', ')} — no se aplicaron, captúralas aparte.`, 'info');
         }
         document.getElementById('analysis-panel-1').style.display = '';
-        applyAnalysis(1);
+        // OJO: con UN solo grupo detectado no hay nada que decidir, así que
+        // se aplica solo (como siempre) para que el caso común no requiera
+        // un clic de más. Con DOS grupos sí hay una decisión real que tomar
+        // (¿cuál tamaño va en esta fila?), así que NINGUNO de los dos se
+        // aplica solo — cada uno se confirma con su propio botón "Aplicar a
+        // filas", independiente del otro (ver más abajo).
+        if (!twoGroups) {
+          applyAnalysis(1);
+        }
 
         if (twoGroups) {
           const g1 = groups[1];
@@ -1846,8 +1925,7 @@
           renderLettersDetail(2, [g1]);
           document.getElementById('diag-msg-2').style.display = 'none';
           document.getElementById('analysis-panel-2').style.display = '';
-          applyAnalysis(2);
-          toast(`2 tamaños de letra detectados en el archivo: ${g0.letters} de ${g0.height_cm} cm y ${g1.letters} de ${g1.height_cm} cm.`, 'success', 5000);
+          toast(`2 tamaños de letra detectados en el archivo: ${g0.letters} de ${g0.height_cm} cm y ${g1.letters} de ${g1.height_cm} cm. Revisa y confirma cada uno con "Aplicar a filas".`, 'success', 6000);
         } else {
           detectedLetterHeights2 = null;
           document.getElementById('analysis-panel-2').style.display = 'none';
@@ -1897,10 +1975,20 @@
       const key       = item.dataset.area + '::' + item.dataset.sub;
       const qtyInput  = item.querySelector('.sub-qty');
       const qtyInput2 = item.querySelector('.sub-qty-2');
-      if (qtyInput  && selectedItems[key]) selectedItems[key].qty  = parseInt(qtyInput.value)  || 1;
-      if (qtyInput2 && selectedItems[key]) selectedItems[key].qty2 = parseInt(qtyInput2.value) || 1;
+      if (qtyInput  && selectedItems[key]) {
+        const v = parseInt(qtyInput.value);
+        selectedItems[key].qty = Number.isNaN(v) ? 1 : v;
+      }
+      if (qtyInput2 && selectedItems[key]) {
+        const v2 = parseInt(qtyInput2.value);
+        selectedItems[key].qty2 = Number.isNaN(v2) ? 1 : v2;
+      }
     });
     this.querySelectorAll('.auto-hidden').forEach(el => el.remove());
+    const ledBrandInp = document.createElement('input');
+    ledBrandInp.type = 'hidden'; ledBrandInp.name = 'led_brand'; ledBrandInp.value = ledBrand;
+    ledBrandInp.className = 'auto-hidden';
+    this.appendChild(ledBrandInp);
     Object.values(selectedItems).forEach(it => {
       const add = (name, val) => {
         const inp = document.createElement('input');

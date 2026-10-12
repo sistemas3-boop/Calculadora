@@ -8,3 +8,5 @@ python-dotenv>=1.0
 Flask-SQLAlchemy>=3.0
 Flask-Login>=0.6
 matplotlib>=3.8
+xhtml2pdf>=0.2.11
+shapely>=2.0
