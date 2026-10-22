@@ -1,7 +1,4 @@
 Flask>=2.0
-pandas>=2.0
-openpyxl>=3.0
-pillow>=10.0
 opencv-python>=4.8
 pymupdf>=1.23
 python-dotenv>=1.0
@@ -10,3 +7,4 @@ Flask-Login>=0.6
 matplotlib>=3.8
 xhtml2pdf>=0.2.11
 shapely>=2.0
+pytesseract>=0.3.10

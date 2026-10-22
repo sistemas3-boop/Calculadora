@@ -138,8 +138,6 @@ flowchart TD
     IMG_Q{"Sube imagen?"}:::dec
     ANALYZE["POST /api/analyze"]:::io
     NO_IMG["detectedHeight = null\ndetectedWidth = null\ndetectedPieces = null"]:::io
-    AI_Q{"OPENAI_API_KEY\ndisponible?"}:::dec
-    GPT["GPT-4o\npieces · width_cm · height_cm"]:::calc
     CV2_Q{"OpenCV\ndisponible?"}:::dec
     OCR["OCR Tesseract + Contornos\nlee medidas · cuenta piezas"]:::act
     EMPTY["width_cm = null\nheight_cm = null\npieces = 0"]:::io
@@ -159,12 +157,9 @@ flowchart TD
     START --> LOAD --> IMG_Q
     IMG_Q -- Si --> ANALYZE
     IMG_Q -- No --> NO_IMG
-    ANALYZE --> AI_Q
-    AI_Q -- Si --> GPT
-    AI_Q -- No --> CV2_Q
+    ANALYZE --> CV2_Q
     CV2_Q -- Si --> OCR
     CV2_Q -- No --> EMPTY
-    GPT --> CALCANCHO
     OCR --> CALCANCHO
     EMPTY --> CALCANCHO
     CALCANCHO --> PANEL --> APPLY --> SELECT
@@ -183,34 +178,22 @@ flowchart TD
   <div class="mermaid">
 %%{init: {"theme": "dark", "themeVariables": {"lineColor":"#4a6a8a","edgeLabelBackground":"#1a1a2e"}}}%%
 flowchart LR
-    classDef ia fill:#1e3a5f,stroke:#4a90d9,color:#ddf
     classDef cv fill:#1a3a1a,stroke:#4a9a4a,color:#dfd
     classDef resp fill:#2a1a3a,stroke:#9a4af0,color:#edf
     classDef js fill:#3a2a0f,stroke:#f0a020,color:#ffe
     classDef dec fill:#3a3a1a,stroke:#d0c040,color:#ffd
 
-    subgraph IA ["Ruta IA  (AI_AVAILABLE = True)"]
-        A1["Codifica en base64"]:::ia
-        A2["OpenAI GPT-4o\nprompt estructurado"]:::ia
-        A3["JSON:\npieces · width_cm · height_cm"]:::ia
-        A1 --> A2 --> A3
-    end
-
-    subgraph CV2P ["Ruta OpenCV  (CV2_AVAILABLE = True, sin IA)"]
+    subgraph CV2P ["Ruta OpenCV  (CV2_AVAILABLE = True)"]
         B1["cv2.imread\nfallback: PIL si cv2 falla"]:::cv
         B2["Escala de grises"]:::cv
-        B3["OCR Tesseract PSM 11,6,3,4\nRegex: dd.dd cm / ddd cm\nFiltro: 5–2000 cm\nwidth = valor mayor\nheight = segundo mayor"]:::cv
-        B4["CLAHE clipLimit=2 tile=8x8\n8 variantes threshold\nFiltro area 0.1%–60%\nno toca borde (1.5%)\naspect ratio 0.08–12\nbest_count · best_boxes"]:::cv
+        B3["_split_content_and_scale:\nCONTENIDO vs ANOTACIONES\nOCR cota ancho (arriba) +\ncota alto (izq., rotada 90°)\nArma escala real mm/px"]:::cv
+        B4["_cluster_boxes_by_height_px:\nagrupa cajas de contenido\npor su alto real (mm/px)"]:::cv
         B5["Bounding boxes numerados\nguarda *_analyzed.jpg"]:::cv
-        B1 --> B2
-        B2 --> B3
-        B2 --> B4
-        B3 --> B5
-        B4 --> B5
+        B1 --> B2 --> B3 --> B4 --> B5
     end
 
     subgraph RESP ["Respuesta JSON"]
-        C1["width_cm · height_cm · pieces\noriginal_url · annotated_url · image_url\ncv2_available · ocr_available · ai_available\nimg_read · file_saved · filename"]:::resp
+        C1["width_cm · height_cm · pieces\nletter_groups\noriginal_url · annotated_url · image_url\ncv2_available · tesseract_available\nimg_read · file_saved · filename"]:::resp
     end
 
     subgraph JS_POST ["JS tras recibir respuesta"]
@@ -243,7 +226,6 @@ flowchart LR
         D11 --> D12
     end
 
-    A3 --> RESP
     B5 --> RESP
     RESP --> JS_POST
   </div>

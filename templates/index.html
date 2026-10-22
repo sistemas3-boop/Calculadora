@@ -835,7 +835,7 @@
       <div class="card-head">
         <div class="ch-icon"><i class="fa-solid fa-file-image"></i></div>
         <div>
-          <div class="ch-label">Archivo del diseño (.cdr)</div>
+          <div class="ch-label">Archivo del diseño (.cdr, imagen o PDF)</div>
           <div class="ch-sub">Detección automática de medidas y piezas</div>
         </div>
         <span class="ch-badge">OPCIONAL</span>
@@ -845,17 +845,18 @@
         <p class="hint">
           <i class="fa-solid fa-lightbulb" style="color:var(--brand);flex-shrink:0;margin-top:.1rem"></i>
           <span>
-          Sube el archivo <strong>.cdr (CorelDRAW)</strong> del diseño. El sistema toma las <strong>medidas exactas</strong> (Alto × Ancho en cm) del texto "Medidas" de la hoja (verificadas contra las cotas del dibujo) y cuenta las <strong>letras</strong> automáticamente.
+          Sube el archivo <strong>.cdr (CorelDRAW)</strong> del diseño para la detección más precisa (medidas exactas del texto "Medidas" de la hoja, y el contorno real de cada letra — necesario además para nesting y LED).
+          Si no tienes el .cdr, también puedes subir una <strong>imagen (JPG/PNG)</strong> o un <strong>PDF</strong> con las cotas ya dibujadas junto al diseño: el sistema las lee por OCR y cuenta las letras por contorno (sin nesting ni cálculo de LED, esos necesitan el .cdr).
           Si el diseño trae dos tamaños de letra (p.ej. un título y un subtítulo), se muestran como dos resultados separados a partir del mismo archivo.
           </span>
         </p>
 
         <div class="upload-zone" id="upload-zone-1">
-          <input type="file" id="image-input-1" accept=".cdr" style="display:none" />
+          <input type="file" id="image-input-1" accept=".cdr,.jpg,.jpeg,.png,.pdf" style="display:none" />
           <div class="uz-pbar-wrap" id="pbar-wrap-1"><div class="uz-pbar" id="pbar-1"></div></div>
           <span class="u-icon" id="uz-icon-1"><i class="fa-solid fa-cloud-arrow-up"></i></span>
-          <h3 id="uz-title-1">Arrastra tu archivo .cdr aquí</h3>
-          <p id="uz-sub-1">o haz clic para seleccionar &nbsp;&bull;&nbsp; CorelDRAW (.cdr) &mdash; máx. 16 MB</p>
+          <h3 id="uz-title-1">Arrastra tu archivo aquí</h3>
+          <p id="uz-sub-1">o haz clic para seleccionar &nbsp;&bull;&nbsp; .cdr, .jpg, .png o .pdf &mdash; máx. 16 MB</p>
           <div class="uz-status" id="uz-status-1"></div>
         </div>
 
@@ -913,7 +914,8 @@
               </button>
               {% if idx == 1 %}
               <span id="no-libreoffice-msg-1" style="display:none" class="warn-chip">LibreOffice no instalado — no se pudo convertir el archivo .cdr.</span>
-              <span id="no-pymupdf-msg-1" style="display:none" class="warn-chip">PyMuPDF no instalado — no se pudo leer el archivo .cdr.</span>
+              <span id="no-pymupdf-msg-1" style="display:none" class="warn-chip">PyMuPDF no instalado — no se pudo leer el archivo .cdr/.pdf.</span>
+              <span id="no-tesseract-msg-1" style="display:none" class="warn-chip">Tesseract OCR no instalado — no se pudieron leer las cotas de la imagen.</span>
               <span id="no-cv2-msg-1" style="display:none" class="warn-chip">OpenCV no instalado.</span>
               {% endif %}
             </div>
@@ -1184,7 +1186,12 @@
 
     <div class="help-rule warn">
       <span class="rule-ico"><i class="fa-solid fa-triangle-exclamation"></i></span>
-      <p><strong>Si la hoja trae varios conceptos</strong> (por ejemplo letras y una bandera), se usa el concepto cuyo nombre dice "Letras" y se avisa cuáles se dejaron fuera. Las <strong>partes del logo</strong> cuentan como letras.</p>
+      <p><strong>Si la hoja trae varios conceptos</strong> (por ejemplo letras y una bandera), se usan los conceptos cuyo nombre dice "Letras" y se avisa cuáles se dejaron fuera. Las <strong>partes del logo</strong> cuentan como letras.</p>
+    </div>
+
+    <div class="help-rule info">
+      <span class="rule-ico"><i class="fa-solid fa-image"></i></span>
+      <p><strong>¿No tienes el .cdr?</strong> Sube una <strong>imagen (JPG/PNG)</strong> o un <strong>PDF</strong> con las cotas de alto/ancho ya dibujadas junto al diseño — el sistema las lee automáticamente y cuenta las piezas por contorno. Es menos preciso que el .cdr (letras que se tocan pueden contarse como una sola) y no sirve para nesting ni cálculo de LED, que necesitan el contorno vectorial exacto.</p>
     </div>
 
     <div style="margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
@@ -1752,8 +1759,8 @@
     const pbar   = document.getElementById('pbar-wrap-' + idx);
     zone.classList.remove('has-file', 'analyzing');
     if (state === 'idle') {
-      icon.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i>'; title.textContent = 'Arrastra tu archivo .cdr aquí';
-      sub.textContent = 'o haz clic para seleccionar • CorelDRAW (.cdr) — máx. 16 MB';
+      icon.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i>'; title.textContent = 'Arrastra tu archivo aquí';
+      sub.textContent = 'o haz clic para seleccionar • .cdr, .jpg, .png o .pdf — máx. 16 MB';
       status.textContent = ''; status.className = 'uz-status'; pbar.style.display = 'none';
     } else if (state === 'ready') {
       icon.innerHTML = '<i class="fa-solid fa-file"></i>'; title.textContent = name || 'Archivo seleccionado';
@@ -1781,8 +1788,10 @@
 
   function handleFile(idx, file) {
     const analyzeBtn = document.getElementById('analyze-btn-' + idx);
-    if (!file.name.toLowerCase().endsWith('.cdr')) {
-      toast('Solo se aceptan archivos .cdr (CorelDRAW)', 'error');
+    const nameLower = file.name.toLowerCase();
+    const validExt = ['.cdr', '.jpg', '.jpeg', '.png', '.pdf'].some(ext => nameLower.endsWith(ext));
+    if (!validExt) {
+      toast('Solo se aceptan archivos .cdr, .jpg, .png o .pdf', 'error');
       return;
     }
     document.getElementById('preview-row-' + idx).style.display = 'none';
@@ -1843,6 +1852,7 @@
         document.getElementById('no-cv2-msg-1').style.display = data.cv2_available ? 'none' : '';
         document.getElementById('no-pymupdf-msg-1').style.display = data.pymupdf_available ? 'none' : '';
         document.getElementById('no-libreoffice-msg-1').style.display = data.libreoffice_available ? 'none' : '';
+        document.getElementById('no-tesseract-msg-1').style.display = data.tesseract_available ? 'none' : '';
         if (data.preview_url) {
           document.getElementById('preview-img-1').src = data.preview_url + '?t=' + Date.now();
           document.getElementById('preview-row-1').style.display = 'flex';
@@ -1889,11 +1899,14 @@
         renderLettersDetail(1, g0 ? [g0] : []);
         const diagEl = document.getElementById('diag-msg-1');
         if (!data.img_read) {
-          diagEl.textContent = 'No se pudo leer el archivo .cdr.'; diagEl.style.display = '';
-          toast('No se pudo leer el archivo .cdr', 'error');
+          diagEl.textContent = data.cdr_error || 'No se pudo leer el archivo.'; diagEl.style.display = '';
+          toast(data.cdr_error || 'No se pudo leer el archivo', 'error');
         } else if (!piecesN) {
-          diagEl.textContent = 'Piezas no detectadas. Ingresa la cantidad manualmente.'; diagEl.style.display = '';
+          diagEl.textContent = data.cdr_error || 'Piezas no detectadas. Ingresa la cantidad manualmente.'; diagEl.style.display = '';
           toast(`Medidas: ${anchoPorPieza}×${heightCm} cm/pieza. Piezas: ingresa manualmente.`, 'info');
+        } else if (data.scale_warning) {
+          diagEl.textContent = data.scale_warning; diagEl.style.display = '';
+          toast(`Detectado: ${anchoPorPieza}×${heightCm} cm/pieza · ${piecesN} pieza(s)`, 'info');
         } else {
           diagEl.style.display = 'none';
           toast(`Detectado: ${anchoPorPieza}×${heightCm} cm/pieza · ${piecesN} pieza(s)`, 'success');

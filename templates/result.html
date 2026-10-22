@@ -499,7 +499,11 @@
 
     <div class="actions">
       <a href="{{ url_for('index') }}" class="btn btn-primary">← Calcular otro anuncio</a>
-      <button type="button" class="btn btn-outline" onclick="window.print()">Imprimir</button>
+      <a href="{{ url_for('result_download', calc_id=calc.id) }}" class="btn btn-outline"
+         style="border-color:rgba(16,185,129,.35);color:var(--green-dark);background:var(--green-light)">
+        <i class="fa-solid fa-file-pdf"></i>&nbsp; Descargar PDF completo
+      </a>
+      <button type="button" class="btn btn-outline" onclick="window.print()">Imprimir esta página</button>
       {% if calc.nesting_pdf_url %}
       <a href="{{ calc.nesting_pdf_url }}" class="btn btn-outline" target="_blank" rel="noopener"
          style="border-color:rgba(21,101,192,.35);color:var(--orange-dk);background:var(--orange-light)">
@@ -518,6 +522,14 @@
     <div class="nesting-print-pages">
       {% for i in range(nesting_pdf_pages) %}
       <img src="{{ url_for('nesting_preview_page', calc_id=calc.id, page=i) }}" alt="Plano de corte {{ i + 1 }}">
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if led_diagram_pdf_pages %}
+    <div class="nesting-print-pages">
+      {% for i in range(led_diagram_pdf_pages) %}
+      <img src="{{ url_for('led_diagram_preview_page', calc_id=calc.id, page=i) }}" alt="Diagrama de LED {{ i + 1 }}">
       {% endfor %}
     </div>
     {% endif %}

@@ -13,8 +13,6 @@ flowchart TD
     IMG_Q{"¿Sube imagen?"}
     ANALYZE["POST /api/analyze"]
     NO_IMG["detectedHeight = null\ndetectedWidth  = null\ndetectedPieces = null"]
-    AI_Q{"¿OPENAI_API_KEY\ndisponible?"}
-    GPT["GPT-4o analiza imagen\nDevuelve: pieces, width_cm, height_cm"]
     CV2_Q{"¿OpenCV\ndisponible?"}
     OCR_FLOW["OCR Tesseract: lee medidas\nContornos: cuenta piezas"]
     EMPTY["width_cm = null\nheight_cm = null\npieces = 0"]
@@ -35,12 +33,9 @@ flowchart TD
     LOAD --> IMG_Q
     IMG_Q -- Sí --> ANALYZE
     IMG_Q -- No --> NO_IMG
-    ANALYZE --> AI_Q
-    AI_Q -- Sí --> GPT
-    AI_Q -- No --> CV2_Q
+    ANALYZE --> CV2_Q
     CV2_Q -- Sí --> OCR_FLOW
     CV2_Q -- No --> EMPTY
-    GPT --> CALC_ANCHO
     OCR_FLOW --> CALC_ANCHO
     EMPTY --> CALC_ANCHO
     CALC_ANCHO --> PANEL
@@ -63,31 +58,19 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph IA ["Ruta IA  (AI_AVAILABLE = True)"]
-        A1["Codifica imagen en base64"]
-        A2["OpenAI GPT-4o\nPrompt: cuenta piezas,\nlee ancho y alto en cm"]
-        A3["JSON: {pieces, width_cm, height_cm}"]
-        A1 --> A2 --> A3
-    end
-
-    subgraph CV2P ["Ruta OpenCV  (CV2_AVAILABLE = True, sin IA)"]
+    subgraph CV2P ["Ruta OpenCV  (CV2_AVAILABLE = True)"]
         B1["cv2.imread\nfallback: PIL si cv2 falla"]
         B2["Convierte a escala de grises"]
-        B3["_extract_dimensions_ocr:\n• Escala imagen hasta 1200 px\n• Aplica kernel de nitidez 3×3\n• Tesseract con PSM 11, 6, 3, 4\n• Regex: dd.dd cm  /  ddd cm\n• Filtra: 5–2000 cm\n→ width  = valor más grande\n→ height = segundo más grande"]
-        B4["_count_pieces_contours:\n• CLAHE clipLimit=2 tile=8×8\n• 8 variantes threshold:\n  Otsu normal/invertido\n  Adaptativo Gaussiano/Media\n  con kernels 3×3 y 5×5\n• Filtra componentes conexos:\n  área: 0.1%–60% del total\n  no toca borde (margen 1.5%)\n  aspect ratio: 0.08–12\n→ best_count y best_boxes"]
+        B3["_split_content_and_scale:\n• _ink_components separa blobs\n• CONTENIDO (letras/logo, macizo)\n  vs ANOTACIONES (cotas/flechas,\n  chicas o huecas/delgadas)\n• OCR cota de ANCHO arriba del\n  contenido, cota de ALTO a la\n  izquierda (rotada 90°)\n• Arma escala real mm/px\n  (con el ANCHO, ver docstring)"]
+        B4["_cluster_boxes_by_height_px:\nagrupa las cajas de CONTENIDO\npor su alto real (mm/px) —\nsepara logo vs letras, detecta\nmás de un grupo/tamaño"]
         B5["Dibuja bounding boxes\ny número en imagen anotada\n→ guarda archivo *_analyzed.jpg"]
-        B1 --> B2
-        B2 --> B3
-        B2 --> B4
-        B3 --> B5
-        B4 --> B5
+        B1 --> B2 --> B3 --> B4 --> B5
     end
 
     subgraph RESP ["Respuesta JSON"]
-        C1["width_cm · height_cm · pieces\noriginal_url · annotated_url · image_url\ncv2_available · ocr_available · ai_available\nimg_read · file_saved · filename"]
+        C1["width_cm · height_cm · pieces\nletter_groups\noriginal_url · annotated_url · image_url\ncv2_available · tesseract_available\npymupdf_available · libreoffice_available\nimg_read · file_saved · filename"]
     end
 
-    A3 --> RESP
     B5 --> RESP
 
     subgraph JS_POST ["JS tras recibir respuesta"]
