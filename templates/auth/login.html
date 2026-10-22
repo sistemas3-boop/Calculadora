@@ -6,26 +6,27 @@
   <title>Iniciar sesión &ndash; Lumicolor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --blue:     #1565c0;
-      --blue-dk:  #0d47a1;
-      --blue-lt:  #eff6ff;
-      --dark:     #0f172a;
-      --dark2:    #1e293b;
-      --bg:       #f1f5f9;
-      --card:     #ffffff;
-      --border:   #e2e8f0;
-      --text:     #0f172a;
-      --muted:    #64748b;
-      --red:      #ef4444;
+      --blue:     #22d3ee;
+      --blue-dk:  #0e7490;
+      --blue-lt:  #0f1a22;
+      --ink:      #07141a;
+      --dark:     #070a0e;
+      --dark2:    #0e141b;
+      --bg:       #0b0f14;
+      --card:     #0e141b;
+      --border:   #1b232c;
+      --text:     #e6edf3;
+      --muted:    #8b98a5;
+      --red:      #f87171;
       --radius:   12px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
       min-height: 100vh; display: flex;
     }
 
@@ -48,8 +49,8 @@
       content: '';
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 60% 50% at 110% 0%, rgba(21,101,192,.25) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 40% at -10% 100%, rgba(21,101,192,.15) 0%, transparent 70%);
+        radial-gradient(ellipse 60% 50% at 110% 0%, rgba(34,211,238,.2) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at -10% 100%, rgba(34,211,238,.12) 0%, transparent 70%);
       pointer-events: none;
     }
     /* grid dots */
@@ -69,10 +70,10 @@
     .ll-icon {
       width: 44px; height: 44px; border-radius: 10px;
       background: var(--blue); display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 20px rgba(21,101,192,.5);
+      box-shadow: 0 4px 20px rgba(34,211,238,.35);
       flex-shrink: 0;
     }
-    .ll-icon svg { width: 24px; height: 24px; fill: white; }
+    .ll-icon svg { width: 24px; height: 24px; fill: var(--ink); }
     .ll-brand-name { font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -.02em; }
     .ll-brand-sub  { font-size: .72rem; color: rgba(255,255,255,.4); margin-top: .1rem; letter-spacing: .04em; text-transform: uppercase; }
 
@@ -87,9 +88,9 @@
     }
     .ll-feat-icon {
       width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
-      background: rgba(21,101,192,.25); border: 1px solid rgba(21,101,192,.4);
+      background: rgba(34,211,238,.15); border: 1px solid rgba(34,211,238,.35);
       display: flex; align-items: center; justify-content: center;
-      font-size: .78rem; color: #93c5fd; margin-top: .08rem;
+      font-size: .78rem; color: #67e8f9; margin-top: .08rem;
     }
 
     .ll-bottom { position: relative; z-index: 1; }
@@ -109,8 +110,8 @@
     .form-sub { font-size: .84rem; color: var(--muted); margin-bottom: 2rem; }
 
     .alert {
-      background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px;
-      padding: .75rem 1rem; font-size: .84rem; color: #991b1b;
+      background: #1a0f12; border: 1px solid #4a1f28; border-radius: 10px;
+      padding: .75rem 1rem; font-size: .84rem; color: #f87171;
       margin-bottom: 1.5rem; display: flex; gap: .5rem; align-items: flex-start;
     }
     .alert ul { margin: .2rem 0 0; padding-left: 1.2rem; }
@@ -131,7 +132,7 @@
     }
     .field input:focus {
       outline: none; border-color: var(--blue);
-      box-shadow: 0 0 0 4px rgba(21,101,192,.12); background: #fff;
+      box-shadow: 0 0 0 4px rgba(34,211,238,.18); background: var(--card);
     }
     .input-ico {
       position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
@@ -147,18 +148,18 @@
 
     .btn-login {
       width: 100%; padding: .85rem;
-      background: var(--blue); color: white;
+      background: var(--blue); color: var(--ink);
       border: none; border-radius: 10px;
       font-size: .95rem; font-weight: 700; font-family: inherit;
       cursor: pointer; letter-spacing: .03em;
-      transition: background .15s, box-shadow .15s, transform .1s;
-      box-shadow: 0 4px 18px rgba(21,101,192,.38);
+      transition: background .15s, box-shadow .15s, transform .1s, color .15s;
+      box-shadow: 0 4px 18px rgba(34,211,238,.3);
       display: flex; align-items: center; justify-content: center; gap: .5rem;
       margin-top: .5rem;
     }
-    .btn-login:hover  { background: var(--blue-dk); box-shadow: 0 6px 24px rgba(21,101,192,.48); }
+    .btn-login:hover  { background: var(--blue-dk); color: #fff; box-shadow: 0 6px 24px rgba(34,211,238,.4); }
     .btn-login:active { transform: scale(.98); }
-    .btn-login .spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .65s linear infinite; }
+    .btn-login .spinner { display: none; width: 16px; height: 16px; border: 2px solid color-mix(in srgb, currentColor 35%, transparent); border-top-color: currentColor; border-radius: 50%; animation: spin .65s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .form-footer { text-align: center; font-size: .77rem; color: var(--muted); margin-top: 1.5rem; }
